@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:17
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /src"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./src:/src
+    environment:
+      - PYTHONUNBUFFERED=1
+      - POSTGRES_HOST=postgres
+
+volumes:
+  postgres:
+  rabbitmq_data:

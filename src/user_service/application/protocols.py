@@ -1,20 +1,53 @@
 from typing import Protocol, Self
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.user_service.domain.aggregates.role import Role
+from src.user_service.domain.aggregates.user import User
+from src.user_service.infrastructure.read_models.user import UserRead
 
 
 class IUserRepository(Protocol):
     """Интерфейс для репозитория пользователей."""
-    ...
+
+    async def get(self, user_id: UUID) -> User: ...
+    async def get_by_email(self, email: str) -> User: ...
+    async def get_all(self) -> list[User]: ...
+    async def add(self, user: User) -> None: ...
+    async def update(self, user: User) -> User: ...
+
+
+class IUserReadRepository(Protocol):
+    """Интерфейс для репозитория чтения пользователей."""
+
+    async def get(self, user_id: UUID) -> UserRead: ...
+    async def get_by_email(self, email: str) -> UserRead: ...
+    async def get_all(self) -> list[UserRead]: ...
+
 
 class IRoleRepository(Protocol):
     """Интерфейс для репозитория ролей."""
+
+    async def get(self, role_id: UUID) -> Role: ...
+    async def get_many(self, role_ids: list[UUID]) -> list[Role]: ...
+    async def get_by_name(self, name: str) -> Role: ...
+    async def get_all(self) -> list[Role]: ...
+    async def add(self, role: Role) -> None: ...
+
+
+class IRoleReadRepository(Protocol):
+    """Интерфейс для репозитория чтения ролей."""
+
     ...
 
-class IUnitOfWork(Protocol):
+
+class IUserServiceUoW(Protocol):
     """Интерфейс для UoW"""
+
     session: AsyncSession
     users: IUserRepository
+    users_read: IUserReadRepository
     roles: IRoleRepository
 
     async def __aenter__(self) -> Self: ...

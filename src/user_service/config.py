@@ -17,12 +17,11 @@ class Settings(BaseSettings):
     """JSON Web Tokens"""
     SECRET_KEY: str
     ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 30
+    # ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 30
+    ACCESS_TOKEN_EXPIRE_SECONDS: int = 60 * 30 * 24 * 30
     REFRESH_TOKEN_EXPIRE_SECONDS: int = 60 * 60 * 24 * 30
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = Settings()

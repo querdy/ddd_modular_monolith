@@ -1,6 +1,78 @@
+from uuid import UUID
+
+from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.user_service.domain.aggregates.user import User
+from src.user_service.infrastructure.exceptions import InfrastructureError
+from src.user_service.infrastructure.read_models.user import UserRead
+from src.user_service.infrastructure.db.postgres.models import UserModel
+from src.user_service.infrastructure.mappers.user import user_to_domain, user_to_orm
 
 
 class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def get(self, user_id: UUID) -> User:
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self.session.execute(stmt)
+        try:
+            orm_user = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Пользователь с ID {user_id} не найден")
+        return user_to_domain(orm_user)
+
+    async def get_by_email(self, email: str) -> User:
+        stmt = select(UserModel).where(UserModel.email == email)
+        result = await self.session.execute(stmt)
+        try:
+            orm_user = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Пользователь с email {email} не найден")
+        return user_to_domain(orm_user)
+
+    async def get_all(self) -> list[User]:
+        stmt = select(UserModel)
+        result = await self.session.execute(stmt)
+        orm_users = result.scalars().all()
+        return [user_to_domain(orm_user) for orm_user in orm_users]
+
+    async def add(self, user: User) -> None:
+        orm_user = user_to_orm(user)
+        self.session.add(orm_user)
+
+    async def update(self, user: User) -> User:
+        orm_user = user_to_orm(user)
+        new_user = await self.session.merge(orm_user)
+        return user_to_domain(new_user)
+
+
+class UserReadRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get(self, user_id: UUID) -> UserRead:
+        stmt = select(UserModel).where(UserModel.id == user_id)
+        result = await self.session.execute(stmt)
+        try:
+            orm_user = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Пользователь с ID {user_id} не найден")
+        return UserRead.model_validate(orm_user)
+
+    async def get_by_email(self, email: str) -> UserRead:
+        stmt = select(UserModel).where(UserModel.email == email)
+        result = await self.session.execute(stmt)
+        try:
+            orm_user = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Пользователь с email {email} не найден")
+        return UserRead.model_validate(orm_user)
+
+    async def get_all(self) -> list[UserRead]:
+        stmt = select(UserModel)
+        result = await self.session.execute(stmt)
+        orm_users = result.scalars().all()
+        return [UserRead.model_validate(orm_user) for orm_user in orm_users]
