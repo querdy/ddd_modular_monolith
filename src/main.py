@@ -1,5 +1,7 @@
-from dishka.integrations.litestar import setup_dishka
-from litestar import Litestar
+from dishka.integrations.litestar import setup_dishka, LitestarProvider
+from dishka import make_async_container
+
+from litestar import Litestar, get
 from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -11,7 +13,8 @@ from litestar.openapi.plugins import (
 )
 from litestar.openapi.spec import Components, SecurityScheme
 
-from src.common.di.container import container
+from src.common.message_bus.broker import broker
+from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.presentation.controllers.auth import AuthController
 from src.user_service.presentation.controllers.role import RoleController
 from src.user_service.presentation.controllers.user import UserController
@@ -22,6 +25,8 @@ app = Litestar(
     route_handlers=[UserController, AuthController, RoleController],
     # on_app_init=[jwt_refresh_auth.on_app_init, jwt_access_auth.on_app_init],
     middleware=[DefineMiddleware(AuthMiddleware)],
+    on_startup=[broker.start],
+    on_shutdown=[broker.close],
     openapi_config=OpenAPIConfig(
         title="Litestar Example",
         description="Example of litestar",
@@ -39,17 +44,19 @@ app = Litestar(
         security=[{"bearer": []}],
         path="/docs",
         render_plugins=[
-            SwaggerRenderPlugin(
-                path="/swagger",
-            ),
-            RedocRenderPlugin(
-                path="/redoc",
-            ),
+            SwaggerRenderPlugin(path="/swagger"),
+            RedocRenderPlugin(path="/redoc"),
             StoplightRenderPlugin(path="/stoplight"),
             RapidocRenderPlugin(path="/rapid"),
             ScalarRenderPlugin(path="/scalar"),
         ],
     ),
 )
+
+container = make_async_container(
+    LitestarProvider(),
+    UoWUserServiceProvider(),
+)
+
 
 setup_dishka(container, app)

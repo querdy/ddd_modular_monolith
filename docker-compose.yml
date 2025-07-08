@@ -22,6 +22,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
@@ -31,6 +36,8 @@ services:
       dockerfile: Dockerfile
     command: sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /src"
     depends_on:
+      rabbitmq:
+        condition: service_healthy
       postgres:
         condition: service_healthy
     ports:

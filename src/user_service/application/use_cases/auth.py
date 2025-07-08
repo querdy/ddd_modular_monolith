@@ -43,13 +43,10 @@ class LoginUserUseCase:
 
     async def execute(self, email: str, password: str) -> Response:
         async with self.uow:
-            user = await self.uow.users_read.get_by_email(email)
+            user = await self.uow.users.get_by_email(email)
             if user is None or not user.hashed_password.verify(password):
                 raise ApplicationError("Неверный email или пароль")
-                # raise HTTPException(
-                #     status_code=status_codes.HTTP_401_UNAUTHORIZED,
-                #     detail="Неверный email или пароль",
-                # )
+            user = await self.uow.users_read.get_by_email(email)
             return generate_token_response(user)
 
 
