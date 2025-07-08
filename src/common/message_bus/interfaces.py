@@ -1,5 +1,7 @@
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, Type
 from pydantic import BaseModel
+
+from src.common.message_bus.schemas import Event, Query
 
 T = TypeVar("T", bound=BaseModel)
 

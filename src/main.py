@@ -13,6 +13,7 @@ from litestar.openapi.plugins import (
 )
 from litestar.openapi.spec import Components, SecurityScheme
 
+from src.common.di import MessagingProvider
 from src.common.message_bus.broker import broker
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.presentation.controllers.auth import AuthController
@@ -56,7 +57,7 @@ app = Litestar(
 container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
+    MessagingProvider()
 )
-
 
 setup_dishka(container, app)

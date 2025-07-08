@@ -1,15 +1,13 @@
 from uuid import UUID
 
+from loguru import logger
 from sqlalchemy.exc import NoResultFound
 
-from src.user_service.application.dto.user import (
-    UserWithRolesDTO,
-    UserRoleAssignmentWithRolesDTO,
-    RoleDTO,
-    PermissionDTO,
-)
+from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
+from src.user_service.application.events import UserCreatedEvent
+from src.user_service.application.use_cases.queries import GetInfoQuery, GetInfoResponse
 from src.user_service.application.use_cases.role import GetOrCreateDefaultRoleUseCase
 from src.user_service.domain.aggregates.user import User
 from src.user_service.domain.enities.user_role_assignment import UserRoleAssignment
@@ -18,8 +16,9 @@ from src.user_service.infrastructure.read_models.user import UserRead
 
 
 class RegisterUserUseCase:
-    def __init__(self, uow: IUserServiceUoW):
+    def __init__(self, uow: IUserServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, username: str, email: str, password: str) -> User:
         async with self.uow:
@@ -40,6 +39,9 @@ class RegisterUserUseCase:
                 role_assignment=UserRoleAssignment.create(role_id=role.id),
             )
             await self.uow.users.add(user)
+            await self.mb.publish(UserCreatedEvent(id=user.id, username=username, email=email))
+            a = await self.mb.query(GetInfoQuery(user_id=str(user.id)), response_model=GetInfoResponse)
+            logger.info(a)
             return user
 
 

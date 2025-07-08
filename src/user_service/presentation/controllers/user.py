@@ -4,6 +4,8 @@ from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import get, Controller, Request, post
 from litestar.dto import DTOData
+
+from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.write.user import (
     RegisterUserUseCase,
@@ -77,9 +79,9 @@ class UserController(Controller):
         summary="Создать нового пользователя",
     )
     @inject
-    async def create(self, uow: FromDishka[IUserServiceUoW], data: DTOData[CreateUserRequestSchema]) -> User:
+    async def create(self, uow: FromDishka[IUserServiceUoW], mb: FromDishka[IMessageBus], data: DTOData[CreateUserRequestSchema]) -> User:
         data_instance = data.create_instance()
-        use_case = RegisterUserUseCase(uow)
+        use_case = RegisterUserUseCase(uow, mb)
         result = await use_case.execute(data_instance.username, data_instance.email, data_instance.password)
         return result
 

@@ -1,6 +1,8 @@
+import json
 from typing import TypeVar, Type
 
 from faststream.rabbit import RabbitBroker
+from loguru import logger
 from pydantic import BaseModel
 
 from src.common.message_bus.schemas import Query, Event
@@ -15,12 +17,12 @@ class FastStreamMessageBus:
         topic = self._resolve_topic(event)
         await self._broker.publish(event, topic)
 
-    async def query(self, query: Query[T], response_model: Type[T]) -> T:
+    async def query(self, query: Query, response_model: Type[T]) -> T:
         topic = self._resolve_topic(query)
-        msg = await self._broker.request(query.model_dump(), queue=topic)
-        data = msg.body
-        return response_model.model_validate(data)
+        msg = await self._broker.request(query, queue=topic)
+        return response_model.model_validate(json.loads(msg.body.decode('utf-8')))
 
     @staticmethod
     def _resolve_topic(message: BaseModel) -> str:
-        return f"{message.__class__.__module__}.{message.__class__.__name__}".replace("_", ".").lower()
+        logger.info(f"{message.__class__.__name__}".lower())
+        return f"{message.__class__.__name__}".lower()
