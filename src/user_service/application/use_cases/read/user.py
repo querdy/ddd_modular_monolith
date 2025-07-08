@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from loguru import logger
 from sqlalchemy.exc import NoResultFound
 
 from src.user_service.application.exceptions import ApplicationError
@@ -26,4 +27,6 @@ class GetUsersUseCase:
 
     async def execute(self) -> list[UserRead]:
         async with self.uow:
-            return await self.uow.users_read.get_all()
+            a =  await self.uow.users_read.get_all()
+            logger.info(len(a))
+            return a

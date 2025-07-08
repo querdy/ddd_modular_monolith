@@ -9,6 +9,7 @@ from src.common.message_bus.schemas import Query, Event
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class FastStreamMessageBus:
     def __init__(self, broker: RabbitBroker):
         self._broker = broker
@@ -20,7 +21,7 @@ class FastStreamMessageBus:
     async def query(self, query: Query, response_model: Type[T]) -> T:
         topic = self._resolve_topic(query)
         msg = await self._broker.request(query, queue=topic)
-        return response_model.model_validate(json.loads(msg.body.decode('utf-8')))
+        return response_model.model_validate(json.loads(msg.body.decode("utf-8")))
 
     @staticmethod
     def _resolve_topic(message: BaseModel) -> str:

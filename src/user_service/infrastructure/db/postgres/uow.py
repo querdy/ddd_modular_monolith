@@ -9,24 +9,16 @@ from src.user_service.infrastructure.db.postgres.repositories.role import RoleRe
 from src.user_service.infrastructure.db.postgres.repositories.user import UserRepository, UserReadRepository
 
 
-class UoWUserService:
+class UserServiceUoW:
     users: IUserRepository
     users_read: IUserReadRepository
     roles: IRoleRepository
 
-    def __init__(self, database_url: str = settings.DB_STRING):
-        engine = create_async_engine(database_url, echo=False, future=True)
-        self.sessionmaker = async_sessionmaker(
-            autocommit=False,
-            autoflush=False,
-            bind=engine,
-            expire_on_commit=False,
-            class_=AsyncSession,
-        )
-        self.session: AsyncSession | None = None
+    def __init__(self, session: AsyncSession):
+        logger.info(id(session))
+        self.session = session
 
     async def __aenter__(self) -> Self:
-        self.session = self.sessionmaker()
         self.users = UserRepository(self.session)
         self.users_read = UserReadRepository(self.session)
         self.roles = RoleRepository(self.session)

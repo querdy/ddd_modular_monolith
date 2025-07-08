@@ -23,13 +23,10 @@ class RegisterUserUseCase:
     async def execute(self, username: str, email: str, password: str) -> User:
         async with self.uow:
             try:
-                try:
-                    existing_user = await self.uow.users.get_by_email(email)
-                    if existing_user:
-                        raise ApplicationError(f"Пользователь с email {email} уже существует")
-                except InfrastructureError:
-                    ...
-            except NoResultFound:
+                existing_user = await self.uow.users.get_by_email(email)
+                if existing_user:
+                    raise ApplicationError(f"Пользователь с email {email} уже существует")
+            except InfrastructureError:
                 ...
             role = await GetOrCreateDefaultRoleUseCase(self.uow).execute()
             user = User.create(

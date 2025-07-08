@@ -1,9 +1,12 @@
+import asyncio
+from typing import Callable
 from uuid import UUID
 
-from dishka import FromDishka
+from dishka import FromDishka, Scope
 from dishka.integrations.litestar import inject
 from litestar import get, Controller, Request, post
 from litestar.dto import DTOData
+from loguru import logger
 
 from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.protocols import IUserServiceUoW
@@ -33,6 +36,13 @@ from src.user_service.presentation.guards.permission import PermissionGuard
 class UserController(Controller):
     path = "/users"
     tags = ["Пользователи"]
+
+    @get(path="/test", summary="Тест")
+    @inject
+    async def test(self, uow_factory: FromDishka[Callable[[], IUserServiceUoW]]) -> None:
+        tasks = [asyncio.create_task(GetUsersUseCase(uow_factory()).execute()) for _ in range(100)]
+        # await asyncio.sleep(20)
+
 
     @get(
         path="",

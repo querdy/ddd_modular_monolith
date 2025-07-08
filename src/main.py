@@ -57,7 +57,7 @@ app = Litestar(
 container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
-    MessagingProvider()
+    MessagingProvider(),
 )
 
 setup_dishka(container, app)

@@ -5,6 +5,7 @@ from src.common.message_bus.schemas import Event, Query
 
 T = TypeVar("T", bound=BaseModel)
 
+
 class IMessageBus(Protocol):
     async def publish(self, event: Event) -> None: ...
     async def query(self, query: Query[T], response_model: Type[T]) -> T: ...
