@@ -15,7 +15,6 @@ class UserServiceUoW:
     roles: IRoleRepository
 
     def __init__(self, session: AsyncSession):
-        logger.info(id(session))
         self.session = session
 
     async def __aenter__(self) -> Self:

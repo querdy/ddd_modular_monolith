@@ -27,6 +27,4 @@ class GetUsersUseCase:
 
     async def execute(self) -> list[UserRead]:
         async with self.uow:
-            a =  await self.uow.users_read.get_all()
-            logger.info(len(a))
-            return a
+            return await self.uow.users_read.get_all()
