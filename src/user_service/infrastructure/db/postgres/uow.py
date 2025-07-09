@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 
 from src.user_service.application.protocols import IUserRepository, IRoleRepository, IUserReadRepository
 from src.user_service.config import settings
+from src.user_service.infrastructure.db.postgres.repositories.blacklist import BlacklistRepository
 from src.user_service.infrastructure.db.postgres.repositories.role import RoleRepository
 from src.user_service.infrastructure.db.postgres.repositories.user import UserRepository, UserReadRepository
 
@@ -21,6 +22,7 @@ class UserServiceUoW:
         self.users = UserRepository(self.session)
         self.users_read = UserReadRepository(self.session)
         self.roles = RoleRepository(self.session)
+        self.blacklist = BlacklistRepository(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

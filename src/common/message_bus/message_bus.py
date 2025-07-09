@@ -20,10 +20,9 @@ class FastStreamMessageBus:
 
     async def query(self, query: Query, response_model: Type[T]) -> T:
         topic = self._resolve_topic(query)
-        msg = await self._broker.request(query, queue=topic)
+        msg = await self._broker.request(query, queue=topic, timeout=10)
         return response_model.model_validate(json.loads(msg.body.decode("utf-8")))
 
     @staticmethod
     def _resolve_topic(message: BaseModel) -> str:
-        logger.info(f"{message.__class__.__name__}".lower())
         return f"{message.__class__.__name__}".lower()

@@ -26,25 +26,18 @@ class AuthMiddleware(AbstractAuthenticationMiddleware):
         if path in ["/schema", "/docs"]:
             return AuthenticationResult(user=None, auth=None)
 
-        if path == "/auth/refresh":
+        if path in ["/auth/refresh", "/auth/logout"]:
             token = connection.cookies.get("refresh_token")
             if token is not None and token.lower().startswith("bearer "):
                 token = token.split(" ")[1]
             else:
                 raise NotAuthorizedException("Отсутствует refresh токен")
             decoded_token = jwt_handler.decode_token(token)
-            # user = await self.get_user_by_token_sub(decoded_token.sub, connection)
-            # if user is None:
-            #     raise NotAuthorizedException("Некорректный refresh токен")
-            return AuthenticationResult(user=None, auth=decoded_token)
+            return AuthenticationResult(user=token, auth=decoded_token)
 
         auth_header = connection.headers.get("authorization")
         if auth_header and auth_header.lower().startswith("bearer "):
             token = auth_header.split(" ")[1]
             decoded_token = jwt_handler.decode_token(token)
-            # logger.debug(decoded_token)
-            # user = await self.get_user_by_token_sub(decoded_token.sub, connection)
-            # if user is None:
-            #     raise NotAuthorizedException("Некорректный токен авторизации")
             return AuthenticationResult(user=None, auth=decoded_token)
         raise NotAuthorizedException("Необходима авторизация")

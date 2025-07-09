@@ -9,7 +9,7 @@ from src.user_service.config import settings
 from src.user_service.domain.aggregates.user import User
 from src.user_service.infrastructure.read_models.user import UserRead
 from src.user_service.presentation.schemas.user import TokenResponseSchema
-from src.user_service.presentation.services.jwt import jwt_handler
+from src.user_service.presentation.services.jwt import jwt_handler, RefreshToken
 
 
 def generate_token_response(user: UserRead) -> Response[TokenResponseSchema]:
@@ -60,3 +60,11 @@ class GenerateAccessAndRefreshTokensUseCase:
             if user is None:
                 raise ApplicationError("Некорректный refresh токен")
         return generate_token_response(user)
+
+class LogoutUserUseCase:
+    def __init__(self, uow: IUserServiceUoW):
+        self.uow = uow
+
+    async def execute(self, token: str, decoded_token: RefreshToken) -> Response:
+        async with self.uow:
+            ...

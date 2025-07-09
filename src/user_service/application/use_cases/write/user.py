@@ -1,13 +1,9 @@
 from uuid import UUID
 
-from loguru import logger
-from sqlalchemy.exc import NoResultFound
-
 from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.events import UserCreatedEvent
-from src.user_service.application.use_cases.queries import GetInfoQuery, GetInfoResponse
 from src.user_service.application.use_cases.role import GetOrCreateDefaultRoleUseCase
 from src.user_service.domain.aggregates.user import User
 from src.user_service.domain.enities.user_role_assignment import UserRoleAssignment
@@ -36,9 +32,7 @@ class RegisterUserUseCase:
                 role_assignment=UserRoleAssignment.create(role_id=role.id),
             )
             await self.uow.users.add(user)
-            await self.mb.publish(UserCreatedEvent(id=user.id, username=username, email=email))
-            a = await self.mb.query(GetInfoQuery(user_id=str(user.id)), response_model=GetInfoResponse)
-            logger.info(a)
+            await self.mb.publish(UserCreatedEvent.model_validate(user))
             return user
 
 
@@ -58,29 +52,3 @@ class AssignRoleUseCase:
             user = await self.uow.users.update(user)
             await self.uow.session.flush()
             return await self.uow.users_read.get(user.id)
-            # roles = await self.uow.roles.get_many(
-            #     [role_assignment.role_id for role_assignment in user.role_assignments]
-            # )
-            # role_mapper = {role.id: role for role in roles}
-            #
-            # return UserWithRolesDTO(
-            #     id=user.id,
-            #     username=user.username,
-            #     email=user.email,
-            #     role_assignments=[
-            #         UserRoleAssignmentWithRolesDTO(
-            #             expires_at=role_assignment.expires_at,
-            #             role=RoleDTO(
-            #                 id=role_mapper[role_assignment.role_id].id,
-            #                 name=role_mapper[role_assignment.role_id].name,
-            #                 permissions=[
-            #                     PermissionDTO(code=permission.code, description=permission.description)
-            #                     for permission in role_mapper[role_assignment.role_id].permissions
-            #                     if role_assignment.role_id in role_mapper
-            #                 ],
-            #             ),
-            #         )
-            #         for role_assignment in user.role_assignments
-            #         if role_assignment.role_id in role_mapper
-            #     ],
-            # )

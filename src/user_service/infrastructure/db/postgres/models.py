@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID, uuid4
 from sqlalchemy import UUID as DBUUID, func, DateTime, String, ForeignKey
 
@@ -69,3 +70,12 @@ class RoleModel(IdBase):
     )
 
     role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(back_populates="role", lazy="selectin")
+
+
+class BlacklistedTokenModel(IdBase):
+    __tablename__ = "blacklisted_tokens"
+
+    token: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)

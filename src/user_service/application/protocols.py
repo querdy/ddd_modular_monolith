@@ -38,8 +38,10 @@ class IRoleRepository(Protocol):
 
 class IRoleReadRepository(Protocol):
     """Интерфейс для репозитория чтения ролей."""
-
     ...
+
+class IBlacklistRepository(Protocol):
+    async def add(self, user: User) -> None: ...
 
 
 class IUserServiceUoW(Protocol):
@@ -49,6 +51,7 @@ class IUserServiceUoW(Protocol):
     users: IUserRepository
     users_read: IUserReadRepository
     roles: IRoleRepository
+    blacklist: IBlacklistRepository
 
     async def __aenter__(self) -> Self: ...
     async def __aexit__(self, exc_type, exc_val, exc_tb): ...
