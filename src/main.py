@@ -50,7 +50,7 @@ app = Litestar(
                     scheme="bearer",
                     bearer_format="JWT",
                     description="Access token в формате Bearer <token>",
-                )
+                ),
             }
         ),
         security=[{"bearer": []}],

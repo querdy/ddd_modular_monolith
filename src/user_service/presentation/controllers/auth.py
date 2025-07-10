@@ -1,8 +1,12 @@
+from typing import Annotated
+
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import Controller, post, Response, get, Request, status_codes
 from litestar.dto import DTOData
+from litestar.enums import RequestEncodingType
 from litestar.exceptions import HTTPException
+from litestar.params import Body
 
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
@@ -11,6 +15,7 @@ from src.user_service.application.use_cases.auth import (
     GenerateAccessAndRefreshTokensUseCase,
     LogoutUserUseCase,
 )
+from src.user_service.domain.aggregates.user import User
 from src.user_service.presentation.schemas.user import (
     LoginRequestSchema,
     TokenResponseSchema,
@@ -25,12 +30,12 @@ class AuthController(Controller):
     @post("/login", dto=LoginRequestDto, exclude_from_auth=True, summary="Авторизация")
     @inject
     async def login(
-        self, uow: FromDishka[IUserServiceUoW], data: DTOData[LoginRequestSchema]
+        self, uow: FromDishka[IUserServiceUoW], data: Annotated[LoginRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)]
     ) -> Response[TokenResponseSchema]:
-        data_instance = data.create_instance()
+        # data_instance = data.create_instance()
         use_case = LoginUserUseCase(uow)
         try:
-            response = await use_case.execute(email=data_instance.email, password=data_instance.password)
+            response = await use_case.execute(email=data.email, password=data.password)
         except ApplicationError as error:
             raise HTTPException(
                 status_code=status_codes.HTTP_401_UNAUTHORIZED,
