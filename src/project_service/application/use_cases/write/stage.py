@@ -13,7 +13,7 @@ class CreateStageUseCase:
 
     async def execute(self, subproject_id: UUID, name: str, description: str):
         async with self.uow:
-            project = await self.uow.projects.get_by_subproject_id(subproject_id)
+            project = await self.uow.projects.get_by_subproject(subproject_id)
 
             stage = Stage.create(name=name, description=description)
             subproject = project.get_subproject_by_id(subproject_id)

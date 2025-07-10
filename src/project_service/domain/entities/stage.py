@@ -20,15 +20,15 @@ class Stage:
     id: UUID
     name: StageName
     status: StageStatus
-    description: StageDescription
+    description: StageDescription | None
     messages: list[Message]
 
     @classmethod
-    def create(cls, name: str, description: str) -> Self:
+    def create(cls, name: str, description: str | None) -> Self:
         return cls(
             id=uuid4(),
             name=StageName.create(name),
             status=StageStatus.CREATED,
-            description=StageDescription.create(description),
+            description=StageDescription.create(description) if description else None,
             messages=[],
         )

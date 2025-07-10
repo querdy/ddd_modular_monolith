@@ -3,7 +3,10 @@ from enum import StrEnum
 from typing import Self
 from uuid import UUID, uuid4
 
+from loguru import logger
+
 from src.common.exceptions.domain import DomainError
+from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
 from src.project_service.domain.value_objects.project_description import ProjectDescription
 from src.project_service.domain.value_objects.project_name import ProjectName
@@ -23,22 +26,24 @@ class Project:
     subprojects: list[Subproject]
 
     @classmethod
-    def create(cls, name: str, description: str, subprojects: list[Subproject] | None = None) -> Self:
+    def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
         if subprojects is None:
             subprojects = []
         return cls(
             id=uuid4(),
             name=ProjectName.create(name),
             status=ProjectStatus.CREATED,
-            description=ProjectDescription.create(description),
+            description=ProjectDescription.create(description) if description else None,
             subprojects=subprojects,
         )
 
     def add_subproject(self, subproject: Subproject) -> None:
-        for current_subproject in self.subprojects:
-            if current_subproject.name == subproject.name:
-                raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
+        if next(filter(lambda current_subproject: current_subproject.name == subproject.name, self.subprojects), None):
+            raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
         self.subprojects.append(subproject)
 
     def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
         return next(filter(lambda subproject: subproject.id == subproject_id, self.subprojects), None)
+
+    def get_stage_by_id(self, stage_id: UUID) -> Stage:
+        return next(filter(None, (next(filter(lambda stage: stage.id == stage_id, subproject.stages), None) for subproject in self.subprojects)), None)

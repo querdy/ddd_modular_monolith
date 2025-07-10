@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 
 @dataclass
-class ProjectCreateSchema:
+class StageCreateRequestSchema:
+    subproject_id: UUID
     name: str
     description: str | None = None

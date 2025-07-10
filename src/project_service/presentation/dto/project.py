@@ -6,7 +6,14 @@ from src.project_service.presentation.schemas.project import ProjectCreateSchema
 
 class ProjectCreateRequestDTO(DataclassDTO[ProjectCreateSchema]): ...
 
+
 class ProjectCreateResponseDTO(DataclassDTO[Project]):
-    config = DTOConfig(
-        max_nested_depth=0
-    )
+    config = DTOConfig(max_nested_depth=0)
+
+
+class ProjectsResponseDTO(DataclassDTO[Project]):
+    config = DTOConfig(max_nested_depth=0)
+
+
+class ProjectResponseDTO(DataclassDTO[Project]):
+    config = DTOConfig(max_nested_depth=1)

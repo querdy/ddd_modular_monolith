@@ -9,7 +9,12 @@ from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
 from src.project_service.application.use_cases.write.project import CreateProjectUseCase
 from src.project_service.domain.aggregates.project import Project
-from src.project_service.presentation.dto.project import ProjectCreateRequestDTO, ProjectCreateResponseDTO
+from src.project_service.presentation.dto.project import (
+    ProjectCreateRequestDTO,
+    ProjectCreateResponseDTO,
+    ProjectsResponseDTO,
+    ProjectResponseDTO,
+)
 from src.project_service.presentation.schemas.project import ProjectCreateSchema
 
 
@@ -25,14 +30,14 @@ class ProjectsController(Controller):
         result = await use_case.execute(data_instance.name, data_instance.description)
         return result
 
-    @get(path="", summary="Получить проекты")
+    @get(path="", return_dto=ProjectsResponseDTO, summary="Получить проекты")
     @inject
     async def get_all(self, uow: FromDishka[IProjectServiceUoW]) -> list[Project]:
         use_case = GetProjectsUseCase(uow)
         result = await use_case.execute()
         return result
 
-    @get(path="/{project_id: uuid}", summary="Получение проекта по ID")
+    @get(path="/{project_id: uuid}", return_dto=ProjectResponseDTO, summary="Получение проекта по ID")
     @inject
     async def get(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Project:
         use_case = GetProjectUseCase(uow)

@@ -6,4 +6,4 @@ from uuid import UUID
 class SubprojectCreateRequestSchema:
     project_id: UUID
     name: str
-    description: str
+    description: str | None = None

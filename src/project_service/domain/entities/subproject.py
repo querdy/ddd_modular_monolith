@@ -23,19 +23,18 @@ class Subproject:
     stages: list[Stage]
 
     @classmethod
-    def create(cls, name: str, description: str, stages: list[Stage] | None = None) -> Self:
+    def create(cls, name: str, description: str | None = None, stages: list[Stage] | None = None) -> Self:
         if stages is None:
             stages = []
         return cls(
             id=uuid4(),
             name=SubprojectName.create(name),
             status=SubprojectStatus.CREATED,
-            description=SubprojectDescription.create(description),
+            description=SubprojectDescription.create(description) if description else None,
             stages=stages,
         )
 
     def add_stage(self, stage: Stage) -> None:
-        for current_stage in self.stages:
-            if current_stage.name == stage.name:
-                raise DomainError(f"Этап с названием {stage.name} уже существует у данного подпроекта")
+        if next(filter(lambda current_stages: current_stages.name == stage.name, self.stages), None):
+            raise DomainError(f"Этап с названием {stage.name} уже существует у данного подпроекта")
         self.stages.append(stage)
