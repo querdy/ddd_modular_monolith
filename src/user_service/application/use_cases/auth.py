@@ -6,6 +6,7 @@ from litestar.exceptions import HTTPException
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.config import settings
+from src.user_service.domain.aggregates.blacklist import BlacklistedToken
 from src.user_service.domain.aggregates.user import User
 from src.user_service.infrastructure.read_models.user import UserRead
 from src.user_service.presentation.schemas.user import TokenResponseSchema
@@ -61,10 +62,18 @@ class GenerateAccessAndRefreshTokensUseCase:
                 raise ApplicationError("Некорректный refresh токен")
         return generate_token_response(user)
 
+
 class LogoutUserUseCase:
     def __init__(self, uow: IUserServiceUoW):
         self.uow = uow
 
     async def execute(self, token: str, decoded_token: RefreshToken) -> Response:
         async with self.uow:
-            ...
+            blacklisted_token = BlacklistedToken.create(token=token, expires_at=decoded_token.exp)
+            await self.uow.blacklist.add(blacklisted_token)
+            response = Response(
+                content="",
+                status_code=status_codes.HTTP_200_OK,
+            )
+            response.delete_cookie("refresh_token")
+            return response

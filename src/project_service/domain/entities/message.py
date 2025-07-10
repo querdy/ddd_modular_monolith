@@ -1,0 +1,23 @@
+from dataclasses import dataclass
+from datetime import datetime, UTC
+from typing import Self
+from uuid import UUID, uuid4
+
+from src.project_service.domain.value_objects.message_text import MessageText
+
+
+@dataclass
+class Message:
+    id: UUID
+    timestamp: datetime
+    author: UUID
+    text: MessageText
+
+    @classmethod
+    def create(cls, author: UUID, text: str) -> Self:
+        return cls(
+            id=uuid4(),
+            timestamp=datetime.now(UTC).replace(tzinfo=None),
+            author=author,
+            text=MessageText.create(text),
+        )

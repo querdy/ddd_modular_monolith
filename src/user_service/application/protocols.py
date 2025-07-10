@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.user_service.domain.aggregates.blacklist import BlacklistedToken
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.aggregates.user import User
 from src.user_service.infrastructure.read_models.user import UserRead
@@ -38,10 +39,12 @@ class IRoleRepository(Protocol):
 
 class IRoleReadRepository(Protocol):
     """Интерфейс для репозитория чтения ролей."""
+
     ...
 
+
 class IBlacklistRepository(Protocol):
-    async def add(self, user: User) -> None: ...
+    async def add(self, blacklisted_token: BlacklistedToken) -> None: ...
 
 
 class IUserServiceUoW(Protocol):

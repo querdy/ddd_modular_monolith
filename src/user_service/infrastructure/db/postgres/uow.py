@@ -3,7 +3,12 @@ from typing import Self
 from loguru import logger
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from src.user_service.application.protocols import IUserRepository, IRoleRepository, IUserReadRepository
+from src.user_service.application.protocols import (
+    IUserRepository,
+    IRoleRepository,
+    IUserReadRepository,
+    IBlacklistRepository,
+)
 from src.user_service.config import settings
 from src.user_service.infrastructure.db.postgres.repositories.blacklist import BlacklistRepository
 from src.user_service.infrastructure.db.postgres.repositories.role import RoleRepository
@@ -14,6 +19,7 @@ class UserServiceUoW:
     users: IUserRepository
     users_read: IUserReadRepository
     roles: IRoleRepository
+    blacklist: IBlacklistRepository
 
     def __init__(self, session: AsyncSession):
         self.session = session

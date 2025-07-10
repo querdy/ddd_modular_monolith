@@ -11,7 +11,6 @@ class PermissionGuard:
         self.code = code
 
     async def __call__(self, connection: ASGIConnection, _: BaseRouteHandler) -> None:
-        roles = connection.auth.roles
         permissions = connection.auth.permissions
         if not self.has_permission(permissions, self.code):
             raise PermissionDeniedException("В доступе отказано")

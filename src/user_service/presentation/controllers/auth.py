@@ -6,8 +6,11 @@ from litestar.exceptions import HTTPException
 
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
-from src.user_service.application.use_cases.auth import LoginUserUseCase, GenerateAccessAndRefreshTokensUseCase, \
-    LogoutUserUseCase
+from src.user_service.application.use_cases.auth import (
+    LoginUserUseCase,
+    GenerateAccessAndRefreshTokensUseCase,
+    LogoutUserUseCase,
+)
 from src.user_service.presentation.schemas.user import (
     LoginRequestSchema,
     TokenResponseSchema,
@@ -54,5 +57,5 @@ class AuthController(Controller):
     @inject
     async def logout(self, request: Request, uow: FromDishka[IUserServiceUoW]) -> Response:
         use_case = LogoutUserUseCase(uow)
-        result = await use_case.execute()
+        result = await use_case.execute(request.user, request.auth)
         return result

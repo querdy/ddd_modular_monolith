@@ -50,7 +50,7 @@ def _(obj: User) -> UserModel:
 
 @singledispatch
 def user_role_assignment_to_orm(obj, user_id: UUID) -> UserRoleAssignmentModel:
-    raise NotImplementedError(f"No domain mapper for {type(obj)}")
+    raise NotImplementedError(f"No orm mapper for {type(obj)}")
 
 
 @user_role_assignment_to_orm.register

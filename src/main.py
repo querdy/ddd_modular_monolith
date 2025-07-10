@@ -15,15 +15,17 @@ from litestar.openapi.spec import Components, SecurityScheme
 
 from src.common.di import MessagingProvider
 from src.common.message_bus.broker import broker
+from src.project_service.di.uow import UoWProjectServiceProvider
+from src.project_service.presentation.controllers.projects import ProjectsController
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.presentation.controllers.auth import AuthController
-from src.user_service.presentation.controllers.role import RoleController
-from src.user_service.presentation.controllers.user import UserController
+from src.user_service.presentation.controllers.roles import RoleController
+from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
 
 app = Litestar(
     debug=True,
-    route_handlers=[UserController, AuthController, RoleController],
+    route_handlers=[AuthController, UserController, RoleController, ProjectsController],
     # on_app_init=[jwt_refresh_auth.on_app_init, jwt_access_auth.on_app_init],
     middleware=[DefineMiddleware(AuthMiddleware)],
     on_startup=[broker.start],
@@ -57,6 +59,7 @@ app = Litestar(
 container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
+    UoWProjectServiceProvider(),
     MessagingProvider(),
 )
 

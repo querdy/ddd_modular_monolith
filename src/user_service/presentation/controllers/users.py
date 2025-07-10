@@ -2,11 +2,10 @@ import asyncio
 from typing import Callable
 from uuid import UUID
 
-from dishka import FromDishka, Scope
+from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import get, Controller, Request, post
 from litestar.dto import DTOData
-from loguru import logger
 
 from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.protocols import IUserServiceUoW
@@ -25,12 +24,12 @@ from src.user_service.presentation.schemas.role import AssignRoleRequestSchema
 
 from src.user_service.presentation.schemas.user import CreateUserRequestSchema
 from src.user_service.presentation.dto.user import (
-    CreateUserRequestDto,
+    UserCreateRequestDto,
     UserCreateResponseDto,
     UserShortResponseDTO,
     UserReadResponseDTO,
 )
-from src.user_service.presentation.guards.permission import PermissionGuard
+from src.common.guards.permission import PermissionGuard
 
 
 class UserController(Controller):
@@ -42,7 +41,6 @@ class UserController(Controller):
     async def test(self, uow_factory: FromDishka[Callable[[], IUserServiceUoW]]) -> None:
         tasks = [asyncio.create_task(GetUsersUseCase(uow_factory()).execute()) for _ in range(100)]
         # await asyncio.sleep(20)
-
 
     @get(
         path="",
@@ -82,14 +80,16 @@ class UserController(Controller):
 
     @post(
         path="",
-        dto=CreateUserRequestDto,
+        dto=UserCreateRequestDto,
         return_dto=UserCreateResponseDto,
         exclude_from_auth=True,
         # guards=[PermissionGuard("user_write")],
         summary="Создать нового пользователя",
     )
     @inject
-    async def create(self, uow: FromDishka[IUserServiceUoW], mb: FromDishka[IMessageBus], data: DTOData[CreateUserRequestSchema]) -> User:
+    async def create(
+        self, uow: FromDishka[IUserServiceUoW], mb: FromDishka[IMessageBus], data: DTOData[CreateUserRequestSchema]
+    ) -> User:
         data_instance = data.create_instance()
         use_case = RegisterUserUseCase(uow, mb)
         result = await use_case.execute(data_instance.username, data_instance.email, data_instance.password)

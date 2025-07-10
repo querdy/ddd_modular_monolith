@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from loguru import logger
 from sqlalchemy.exc import NoResultFound
 
 from src.user_service.application.exceptions import ApplicationError
