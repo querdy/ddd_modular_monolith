@@ -15,7 +15,6 @@ from src.user_service.application.use_cases.auth import (
     GenerateAccessAndRefreshTokensUseCase,
     LogoutUserUseCase,
 )
-from src.user_service.domain.aggregates.user import User
 from src.user_service.presentation.schemas.user import (
     LoginRequestSchema,
     TokenResponseSchema,
@@ -32,7 +31,6 @@ class AuthController(Controller):
     async def login(
         self, uow: FromDishka[IUserServiceUoW], data: Annotated[LoginRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)]
     ) -> Response[TokenResponseSchema]:
-        # data_instance = data.create_instance()
         use_case = LoginUserUseCase(uow)
         try:
             response = await use_case.execute(email=data.email, password=data.password)
