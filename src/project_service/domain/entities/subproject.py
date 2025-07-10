@@ -3,6 +3,7 @@ from enum import StrEnum
 from typing import Self
 from uuid import UUID, uuid4
 
+from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.subproject_description import SubprojectDescription
 from src.project_service.domain.value_objects.subproject_name import SubprojectName
@@ -32,3 +33,9 @@ class Subproject:
             description=SubprojectDescription.create(description),
             stages=stages,
         )
+
+    def add_stage(self, stage: Stage) -> None:
+        for current_stage in self.stages:
+            if current_stage.name == stage.name:
+                raise DomainError(f"Этап с названием {stage.name} уже существует у данного подпроекта")
+        self.stages.append(stage)

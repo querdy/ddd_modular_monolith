@@ -37,5 +37,8 @@ class Project:
     def add_subproject(self, subproject: Subproject) -> None:
         for current_subproject in self.subprojects:
             if current_subproject.name == subproject.name:
-                raise DomainError(f"Подпоект с названием {subproject.name} уже существует у данного проекта")
+                raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
         self.subprojects.append(subproject)
+
+    def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
+        return next(filter(lambda subproject: subproject.id == subproject_id, self.subprojects), None)

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.exceptions.infrastructure import InfrastructureError
 from src.project_service.domain.aggregates.project import Project
-from src.project_service.infrastructure.db.postgres.models import ProjectModel
+from src.project_service.infrastructure.db.postgres.models import ProjectModel, SubprojectModel
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 
 
@@ -25,4 +25,24 @@ class ProjectRepository:
             orm_project = result.scalar_one()
         except NoResultFound:
             raise InfrastructureError(f"Проект с ID {project_id} не найден")
+        return project_to_domain(orm_project)
+
+    async def get_all(self) -> list[Project]:
+        stmt = select(ProjectModel)
+        result = await self.session.execute(stmt)
+        orm_users = result.scalars().all()
+        return [project_to_domain(orm_user) for orm_user in orm_users]
+
+    async def update(self, project: Project) -> Project:
+        orm_project = project_to_orm(project)
+        new_project = await self.session.merge(orm_project)
+        return project_to_domain(new_project)
+
+    async def get_by_subproject_id(self, subproject_id: UUID) -> Project:
+        stmt = select(ProjectModel).join(SubprojectModel).where(SubprojectModel.id == subproject_id)
+        result = await self.session.execute(stmt)
+        try:
+            orm_project = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Проект для подпроекта с ID {subproject_id} не найден")
         return project_to_domain(orm_project)

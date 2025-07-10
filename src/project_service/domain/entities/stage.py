@@ -30,4 +30,5 @@ class Stage:
             name=StageName.create(name),
             status=StageStatus.CREATED,
             description=StageDescription.create(description),
+            messages=[],
         )

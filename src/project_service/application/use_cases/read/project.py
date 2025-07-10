@@ -12,3 +12,13 @@ class GetProjectUseCase:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
             return project
+
+
+class GetProjectsUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self) -> list[Project]:
+        async with self.uow:
+            projects = await self.uow.projects.get_all()
+            return projects
