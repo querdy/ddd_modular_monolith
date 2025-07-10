@@ -6,6 +6,7 @@ class CreateUserRequestSchema:
     username: str
     email: str
     password: str
+    repeat_password: str
 
 
 @dataclass

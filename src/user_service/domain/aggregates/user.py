@@ -26,8 +26,11 @@ class User:
         username: str,
         email: str,
         password: str,
+        repeat_password: str,
         role_assignment: UserRoleAssignment,
     ) -> Self:
+        if password != repeat_password:
+            raise DomainError(f"Пароль и повтор пароля не совпадают")
         return cls(
             id=uuid4(),
             username=Username(username),

@@ -16,7 +16,7 @@ class RegisterUserUseCase:
         self.uow = uow
         self.mb = mb
 
-    async def execute(self, username: str, email: str, password: str) -> User:
+    async def execute(self, username: str, email: str, password: str, repeat_password: str) -> User:
         async with self.uow:
             try:
                 existing_user = await self.uow.users.get_by_email(email)
@@ -29,6 +29,7 @@ class RegisterUserUseCase:
                 username=username,
                 email=email,
                 password=password,
+                repeat_password=repeat_password,
                 role_assignment=UserRoleAssignment.create(role_id=role.id),
             )
             await self.uow.users.add(user)
