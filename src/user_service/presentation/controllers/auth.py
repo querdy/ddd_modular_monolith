@@ -3,7 +3,6 @@ from typing import Annotated
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import Controller, post, Response, get, Request, status_codes
-from litestar.dto import DTOData
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import HTTPException
 from litestar.params import Body
