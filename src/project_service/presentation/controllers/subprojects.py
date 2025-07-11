@@ -19,10 +19,13 @@ from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
     SubprojectCreateResponseDTO,
     SubprojectResponseDTO,
+    SubprojectShortResponseDTO,
 )
 from src.project_service.presentation.pagination import SubprojectOffsetPagination
-from src.project_service.presentation.schemas.subproject import SubprojectCreateRequestSchema, \
-    FilterSubprojectRequestSchema
+from src.project_service.presentation.schemas.subproject import (
+    SubprojectCreateRequestSchema,
+    FilterSubprojectRequestSchema,
+)
 
 
 class SubProjectsController(Controller):
@@ -46,13 +49,20 @@ class SubProjectsController(Controller):
         result = await use_case.execute(data_instance.project_id, data_instance.name, data_instance.description)
         return result
 
-    @get(path="", summary="Получение подпроектов", dependencies={"filters": get_subproject_filters})
+    @get(
+        path="",
+        return_dto=SubprojectShortResponseDTO,
+        dependencies={"filters": get_subproject_filters},
+        summary="Получение подпроектов",
+    )
     @inject
-    async def list(self,
-                   limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
-                   offset: Annotated[int, Parameter(ge=0, default=0)],
-                   filters: FilterSubprojectRequestSchema,
-                   uow: FromDishka[IProjectServiceUoW]) -> OffsetPagination[Subproject]:
+    async def list(
+        self,
+        limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
+        offset: Annotated[int, Parameter(ge=0, default=0)],
+        filters: FilterSubprojectRequestSchema,
+        uow: FromDishka[IProjectServiceUoW],
+    ) -> OffsetPagination[Subproject]:
         use_case = GetSubprojectsUseCase(uow)
         result = await use_case.execute(limit, offset, **asdict(filters))
         return result
@@ -63,4 +73,3 @@ class SubProjectsController(Controller):
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result
-

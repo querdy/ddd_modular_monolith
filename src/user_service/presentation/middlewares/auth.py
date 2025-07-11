@@ -23,7 +23,16 @@ class AuthMiddleware(AbstractAuthenticationMiddleware):
 
     async def authenticate_request(self, connection: ASGIConnection) -> AuthenticationResult:
         path = connection.scope["path"]
-        if path in ["/schema", "/docs"]:
+        if path in [
+            "/schema",
+            "/docs",
+            "/docs/openapi.json",
+            "/docs/swagger",
+            "/docs/redoc",
+            "/docs/stoplight",
+            "/docs/rapid",
+            "/docs/scalar",
+        ]:
             return AuthenticationResult(user=None, auth=None)
 
         if path in ["/auth/refresh", "/auth/logout"]:

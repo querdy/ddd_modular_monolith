@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.project_service.domain.aggregates.project import Project
+from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
 
 
@@ -16,9 +17,13 @@ class IProjectRepository(Protocol):
     async def get_by_subproject(self, subproject_id: UUID) -> Project: ...
     async def get_by_stage(self, stage_id: UUID) -> Project: ...
 
+
 class IProjectReadRepository:
     async def subprojects_count(self, **filters) -> int: ...
     async def get_subprojects(self, limit: int, offset: int, **filters) -> list[Subproject]: ...
+
+    async def stages_count(self, **filters) -> int: ...
+    async def get_stages(self, limit: int, offset: int, **filters) -> list[Stage]: ...
 
 
 class IProjectServiceUoW(Protocol):

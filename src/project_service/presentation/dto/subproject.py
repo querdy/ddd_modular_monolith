@@ -11,5 +11,9 @@ class SubprojectCreateResponseDTO(DataclassDTO[Subproject]):
     config = DTOConfig(max_nested_depth=0)
 
 
+class SubprojectShortResponseDTO(DataclassDTO[Subproject]):
+    config = DTOConfig(max_nested_depth=0)
+
+
 class SubprojectResponseDTO(DataclassDTO[Subproject]):
     config = DTOConfig(max_nested_depth=1)
