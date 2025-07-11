@@ -10,5 +10,6 @@ class StageCreateRequestDTO(DataclassDTO[StageCreateRequestSchema]): ...
 class StageCreateResponseDTO(DataclassDTO[Stage]):
     config = DTOConfig(max_nested_depth=0)
 
+
 class StageResponseDTO(DataclassDTO[Stage]):
     config = DTOConfig(max_nested_depth=1)

@@ -2,19 +2,21 @@ from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.project_service.application.protocols import IProjectRepository
-from src.project_service.infrastructure.db.postgres.repositories.project import ProjectRepository
+from src.project_service.application.protocols import IProjectRepository, IProjectReadRepository
+from src.project_service.infrastructure.db.postgres.repositories.project import ProjectRepository, ProjectReadRepository
 
 
 class ProjectServiceUoW:
     session: AsyncSession
     projects: IProjectRepository
+    projects_read: IProjectReadRepository
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
     async def __aenter__(self) -> Self:
         self.projects = ProjectRepository(self.session)
+        self.projects_read = ProjectReadRepository(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

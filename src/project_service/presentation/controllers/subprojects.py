@@ -1,20 +1,28 @@
+from dataclasses import asdict
+from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import Controller, post, get
 from litestar.dto import DTOData
+from litestar.pagination import OffsetPagination
+from litestar.params import Parameter, Dependency
+from loguru import logger
 
 from src.project_service.application.protocols import IProjectServiceUoW
-from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase
+from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
 from src.project_service.application.use_cases.write.subproject import CreateSubprojectUseCase
 from src.project_service.domain.entities.subproject import Subproject
+from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
     SubprojectCreateResponseDTO,
     SubprojectResponseDTO,
 )
-from src.project_service.presentation.schemas.subproject import SubprojectCreateRequestSchema
+from src.project_service.presentation.pagination import SubprojectOffsetPagination
+from src.project_service.presentation.schemas.subproject import SubprojectCreateRequestSchema, \
+    FilterSubprojectRequestSchema
 
 
 class SubProjectsController(Controller):
@@ -38,9 +46,21 @@ class SubProjectsController(Controller):
         result = await use_case.execute(data_instance.project_id, data_instance.name, data_instance.description)
         return result
 
+    @get(path="", summary="Получение подпроектов", dependencies={"filters": get_subproject_filters})
+    @inject
+    async def list(self,
+                   limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
+                   offset: Annotated[int, Parameter(ge=0, default=0)],
+                   filters: FilterSubprojectRequestSchema,
+                   uow: FromDishka[IProjectServiceUoW]) -> OffsetPagination[Subproject]:
+        use_case = GetSubprojectsUseCase(uow)
+        result = await use_case.execute(limit, offset, **asdict(filters))
+        return result
+
     @get(path="/{subproject_id: uuid}", return_dto=SubprojectResponseDTO, summary="Получение подпроекта по ID")
     @inject
     async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Subproject:
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result
+

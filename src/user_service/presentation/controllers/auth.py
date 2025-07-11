@@ -28,7 +28,9 @@ class AuthController(Controller):
     @post("/login", dto=LoginRequestDto, exclude_from_auth=True, summary="Авторизация")
     @inject
     async def login(
-        self, uow: FromDishka[IUserServiceUoW], data: Annotated[LoginRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)]
+        self,
+        uow: FromDishka[IUserServiceUoW],
+        data: Annotated[LoginRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[TokenResponseSchema]:
         use_case = LoginUserUseCase(uow)
         try:

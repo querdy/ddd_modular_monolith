@@ -46,4 +46,13 @@ class Project:
         return next(filter(lambda subproject: subproject.id == subproject_id, self.subprojects), None)
 
     def get_stage_by_id(self, stage_id: UUID) -> Stage:
-        return next(filter(None, (next(filter(lambda stage: stage.id == stage_id, subproject.stages), None) for subproject in self.subprojects)), None)
+        return next(
+            filter(
+                None,
+                (
+                    next(filter(lambda stage: stage.id == stage_id, subproject.stages), None)
+                    for subproject in self.subprojects
+                ),
+            ),
+            None,
+        )

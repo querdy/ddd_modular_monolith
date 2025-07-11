@@ -92,7 +92,9 @@ class UserController(Controller):
     ) -> User:
         data_instance = data.create_instance()
         use_case = RegisterUserUseCase(uow, mb)
-        result = await use_case.execute(data_instance.username, data_instance.email, data_instance.password, data_instance.repeat_password)
+        result = await use_case.execute(
+            data_instance.username, data_instance.email, data_instance.password, data_instance.repeat_password
+        )
         return result
 
     @post(

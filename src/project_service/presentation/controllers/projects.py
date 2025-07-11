@@ -1,3 +1,4 @@
+from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
@@ -16,6 +17,8 @@ from src.project_service.presentation.dto.project import (
     ProjectResponseDTO,
 )
 from src.project_service.presentation.schemas.project import ProjectCreateSchema
+from litestar.pagination import AbstractAsyncClassicPaginator, ClassicPagination, OffsetPagination
+from litestar.params import Parameter
 
 
 class ProjectsController(Controller):
@@ -32,9 +35,14 @@ class ProjectsController(Controller):
 
     @get(path="", return_dto=ProjectsResponseDTO, summary="Получить проекты")
     @inject
-    async def get_all(self, uow: FromDishka[IProjectServiceUoW]) -> list[Project]:
+    async def get_many(
+        self,
+        uow: FromDishka[IProjectServiceUoW],
+        limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
+        offset: Annotated[int, Parameter(ge=0, default=0)],
+    ) -> OffsetPagination[Project]:
         use_case = GetProjectsUseCase(uow)
-        result = await use_case.execute()
+        result = await use_case.execute(limit, offset)
         return result
 
     @get(path="/{project_id: uuid}", return_dto=ProjectResponseDTO, summary="Получение проекта по ID")
