@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.aggregates.project import Project
 
@@ -11,3 +13,12 @@ class CreateProjectUseCase:
             project = Project.create(name=name, description=description)
             await self.uow.projects.add(project)
             return project
+
+
+class DeleteProjectUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self, project_id: UUID) -> None:
+        async with self.uow:
+            await self.uow.projects.delete(project_id)

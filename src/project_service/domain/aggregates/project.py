@@ -42,17 +42,21 @@ class Project:
             raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
         self.subprojects.append(subproject)
 
+    def remove_subproject(self, subproject_id: UUID) -> None:
+        subproject_to_remove = next(
+            filter(lambda current_subproject: current_subproject.id == subproject_id, self.subprojects), None
+        )
+        if subproject_to_remove is None:
+            raise DomainError(f"Подпроект с идентификатором {subproject_id} не найден у данного проекта")
+
+        self.subprojects.remove(subproject_to_remove)
+
     def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
         return next(filter(lambda subproject: subproject.id == subproject_id, self.subprojects), None)
 
-    def get_stage_by_id(self, stage_id: UUID) -> Stage:
-        return next(
-            filter(
-                None,
-                (
-                    next(filter(lambda stage: stage.id == stage_id, subproject.stages), None)
-                    for subproject in self.subprojects
-                ),
-            ),
-            None,
-        )
+    def get_stage_by_id(self, stage_id: UUID) -> Stage | None:
+        for subproject in self.subprojects:
+            stage = next((stage for stage in subproject.stages if stage.id == stage_id), None)
+            if stage is not None:
+                return stage
+        return None

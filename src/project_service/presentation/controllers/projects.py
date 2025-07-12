@@ -3,12 +3,12 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get
+from litestar import Controller, post, get, delete
 from litestar.dto import DTOData
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
-from src.project_service.application.use_cases.write.project import CreateProjectUseCase
+from src.project_service.application.use_cases.write.project import CreateProjectUseCase, DeleteProjectUseCase
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.presentation.dto.project import (
     ProjectCreateRequestDTO,
@@ -51,3 +51,9 @@ class ProjectsController(Controller):
         use_case = GetProjectUseCase(uow)
         result = await use_case.execute(project_id)
         return result
+
+    @delete(path="/{project_id: uuid}", summary="Удаление проекта")
+    @inject
+    async def delete(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
+        use_case = DeleteProjectUseCase(uow)
+        await use_case.execute(project_id)

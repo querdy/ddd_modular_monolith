@@ -29,8 +29,8 @@ class SubprojectModel(IdBase):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
+    project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
 
-    project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id"), nullable=False)
     project: Mapped["ProjectModel"] = relationship(
         "ProjectModel",
         back_populates="subprojects",
@@ -50,12 +50,32 @@ class StageModel(IdBase):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
-
-    subproject_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("subprojects.id"), nullable=True)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    subproject_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("subprojects.id", ondelete="CASCADE"), nullable=False)
 
     subproject: Mapped["SubprojectModel"] = relationship(
         "SubprojectModel",
         back_populates="stages",
+        lazy="selectin",
+    )
+    messages: Mapped[list["MessageModel"]] = relationship(
+        "MessageModel",
+        back_populates="stage",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+
+class MessageModel(IdBase):
+    __tablename__ = "messages"
+
+    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    author_id: Mapped[UUID] = mapped_column(DBUUID, nullable=False)
+    text: Mapped[str] = mapped_column(String(255), nullable=False)
+    stage_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("stages.id", ondelete="CASCADE"), nullable=False)
+
+    stage: Mapped[StageModel] = relationship(
+        "StageModel",
+        back_populates="messages",
         lazy="selectin",
     )

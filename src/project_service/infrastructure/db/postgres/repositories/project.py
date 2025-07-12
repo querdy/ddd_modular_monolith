@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.exceptions.domain import DomainError
 from src.common.exceptions.infrastructure import InfrastructureError
 from src.project_service.application.protocols import IProjectReadRepository
 from src.project_service.domain.aggregates.project import Project
@@ -71,6 +72,12 @@ class ProjectRepository:
             raise InfrastructureError(f"Проект, содержащий этап с ID {stage_id}, не найден")
 
         return project_to_domain(orm_project)
+
+    async def delete(self, project_id: UUID) -> None:
+        stmt = delete(ProjectModel).where(ProjectModel.id == project_id)
+        result = await self.session.execute(stmt)
+        if result.rowcount == 0:
+            raise DomainError("Проект с указанным ID отсутствует")
 
 
 class ProjectReadRepository:

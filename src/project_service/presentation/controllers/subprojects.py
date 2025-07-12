@@ -4,15 +4,14 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get
+from litestar import Controller, post, get, delete
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
-from litestar.params import Parameter, Dependency
-from loguru import logger
+from litestar.params import Parameter
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
-from src.project_service.application.use_cases.write.subproject import CreateSubprojectUseCase
+from src.project_service.application.use_cases.write.subproject import CreateSubprojectUseCase, DeleteSubprojectUseCase
 from src.project_service.domain.entities.subproject import Subproject
 from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
@@ -73,3 +72,10 @@ class SubProjectsController(Controller):
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result
+
+    @delete(path="/{subproject_id: uuid}", summary="Удаление проекта")
+    @inject
+    async def delete(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
+        use_case = DeleteSubprojectUseCase(uow)
+        await use_case.execute(subproject_id)
+

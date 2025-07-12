@@ -10,14 +10,14 @@ from src.project_service.domain.value_objects.message_text import MessageText
 class Message:
     id: UUID
     timestamp: datetime
-    author: UUID
+    author_id: UUID
     text: MessageText
 
     @classmethod
-    def create(cls, author: UUID, text: str) -> Self:
+    def create(cls, author_id: UUID, text: str) -> Self:
         return cls(
             id=uuid4(),
             timestamp=datetime.now(UTC).replace(tzinfo=None),
-            author=author,
+            author_id=author_id,
             text=MessageText.create(text),
         )

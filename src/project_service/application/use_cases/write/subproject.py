@@ -16,3 +16,13 @@ class CreateSubprojectUseCase:
             project.add_subproject(subproject)
             await self.uow.projects.update(project)
             return subproject
+
+class DeleteSubprojectUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self, subproject_id: UUID) -> None:
+        async with self.uow:
+            project = await self.uow.projects.get_by_subproject(subproject_id)
+            project.remove_subproject(subproject_id)
+            await self.uow.projects.update(project)

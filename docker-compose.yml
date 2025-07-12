@@ -34,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /src"
+    command: sh -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
       - "8000:8000"
 
     volumes:
-      - ./src:/src
+      - ./:/app
     environment:
       - PYTHONUNBUFFERED=1
       - POSTGRES_HOST=postgres
