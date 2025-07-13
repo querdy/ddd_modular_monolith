@@ -12,3 +12,9 @@ class SubprojectCreateRequestSchema:
 @dataclass
 class FilterSubprojectRequestSchema:
     project_id: UUID = None
+
+
+@dataclass
+class SubprojectUpdateRequestSchema:
+    name: str | None = None
+    description: str | None = None

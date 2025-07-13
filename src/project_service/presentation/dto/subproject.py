@@ -1,7 +1,10 @@
 from litestar.dto import DataclassDTO, DTOConfig
 
 from src.project_service.domain.entities.subproject import Subproject
-from src.project_service.presentation.schemas.subproject import SubprojectCreateRequestSchema
+from src.project_service.presentation.schemas.subproject import (
+    SubprojectCreateRequestSchema,
+    SubprojectUpdateRequestSchema,
+)
 
 
 class SubprojectCreateRequestDTO(DataclassDTO[SubprojectCreateRequestSchema]): ...
@@ -17,3 +20,7 @@ class SubprojectShortResponseDTO(DataclassDTO[Subproject]):
 
 class SubprojectResponseDTO(DataclassDTO[Subproject]):
     config = DTOConfig(max_nested_depth=1)
+
+
+class SubprojectUpdateRequestDTO(DataclassDTO[SubprojectUpdateRequestSchema]):
+    config = DTOConfig(partial=True)

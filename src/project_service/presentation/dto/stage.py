@@ -1,7 +1,7 @@
 from litestar.dto import DataclassDTO, DTOConfig
 
 from src.project_service.domain.entities.stage import Stage
-from src.project_service.presentation.schemas.stage import StageCreateRequestSchema
+from src.project_service.presentation.schemas.stage import StageCreateRequestSchema, StageUpdateRequestSchema
 
 
 class StageCreateRequestDTO(DataclassDTO[StageCreateRequestSchema]): ...
@@ -17,3 +17,7 @@ class StageShortResponseDTO(DataclassDTO[Stage]):
 
 class StageResponseDTO(DataclassDTO[Stage]):
     config = DTOConfig(max_nested_depth=1)
+
+
+class StageUpdateRequestDTO(DataclassDTO[StageUpdateRequestSchema]):
+    config = DTOConfig(partial=True)

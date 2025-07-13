@@ -22,3 +22,14 @@ class DeleteProjectUseCase:
     async def execute(self, project_id: UUID) -> None:
         async with self.uow:
             await self.uow.projects.delete(project_id)
+
+
+class UpdateProjectUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self, project_id: UUID, name: str, description: str) -> Project:
+        async with self.uow:
+            project = await self.uow.projects.get(project_id)
+            project.update(name, description)
+            return project

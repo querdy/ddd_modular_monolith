@@ -51,7 +51,9 @@ class StageModel(IdBase):
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    subproject_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("subprojects.id", ondelete="CASCADE"), nullable=False)
+    subproject_id: Mapped[UUID] = mapped_column(
+        DBUUID, ForeignKey("subprojects.id", ondelete="CASCADE"), nullable=False
+    )
 
     subproject: Mapped["SubprojectModel"] = relationship(
         "SubprojectModel",

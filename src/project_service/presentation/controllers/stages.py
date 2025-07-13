@@ -4,23 +4,34 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get
+from litestar import Controller, post, get, patch, delete
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
+from loguru import logger
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.stage import GetStageUseCase, GetStagesUseCase
-from src.project_service.application.use_cases.write.stage import CreateStageUseCase
+from src.project_service.application.use_cases.write.stage import (
+    CreateStageUseCase,
+    UpdateStageUseCase,
+    DeleteStageUseCase,
+)
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.domain.value_objects.enums import StageStatus
 from src.project_service.presentation.di.filters import get_stage_filters
 from src.project_service.presentation.dto.stage import (
     StageCreateRequestDTO,
     StageCreateResponseDTO,
     StageResponseDTO,
     StageShortResponseDTO,
+    StageUpdateRequestDTO,
 )
-from src.project_service.presentation.schemas.stage import StageCreateRequestSchema, FilterStageRequestSchema
+from src.project_service.presentation.schemas.stage import (
+    StageCreateRequestSchema,
+    FilterStageRequestSchema,
+    StageUpdateRequestSchema,
+)
 
 
 class StagesController(Controller):
@@ -61,3 +72,25 @@ class StagesController(Controller):
         use_case = GetStageUseCase(uow)
         result = await use_case.execute(stage_id)
         return result
+
+    @patch(
+        path="/{stage_id: uuid}",
+        dto=StageUpdateRequestDTO,
+        return_dto=StageShortResponseDTO,
+        summary="Изменение этапа",
+        description=f"Статусы: {', '.join(f'"{s.value}"' for s in StageStatus)}",
+    )
+    @inject
+    async def update(
+        self, stage_id: UUID, data: DTOData[StageUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
+    ) -> Stage:
+        data_instance = data.create_instance()
+        use_case = UpdateStageUseCase(uow)
+        result = await use_case.execute(stage_id, data_instance.name, data_instance.description, data_instance.status)
+        return result
+
+    @delete(path="/{stage_id: uuid}", summary="Удаление этапа")
+    @inject
+    async def delete(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
+        use_case = DeleteStageUseCase(uow)
+        await use_case.execute(stage_id)

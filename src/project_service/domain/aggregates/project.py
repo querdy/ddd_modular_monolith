@@ -1,20 +1,13 @@
 from dataclasses import dataclass
-from enum import StrEnum
 from typing import Self
 from uuid import UUID, uuid4
 
-from loguru import logger
-
 from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.stage import Stage
-from src.project_service.domain.entities.subproject import Subproject
+from src.project_service.domain.entities.subproject import Subproject, SubprojectStatus
+from src.project_service.domain.value_objects.enums import ProjectStatus
 from src.project_service.domain.value_objects.project_description import ProjectDescription
 from src.project_service.domain.value_objects.project_name import ProjectName
-
-
-class ProjectStatus(StrEnum):
-    CREATED = "Создан"
-    COMPLETED = "Завершен"
 
 
 @dataclass
@@ -37,10 +30,23 @@ class Project:
             subprojects=subprojects,
         )
 
+    def _update_status(self):
+        if len(self.subprojects) == 0:
+            self.status = ProjectStatus.CREATED
+
+        child_statuses = tuple(subproject.status for subproject in self.subprojects)
+
+        if all(child_status == SubprojectStatus.COMPLETED for child_status in child_statuses):
+            self.status = ProjectStatus.COMPLETED
+
+        else:
+            self.status = ProjectStatus.IN_PROGRESS
+
     def add_subproject(self, subproject: Subproject) -> None:
         if next(filter(lambda current_subproject: current_subproject.name == subproject.name, self.subprojects), None):
             raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
         self.subprojects.append(subproject)
+        self._update_status()
 
     def remove_subproject(self, subproject_id: UUID) -> None:
         subproject_to_remove = next(
@@ -50,9 +56,10 @@ class Project:
             raise DomainError(f"Подпроект с идентификатором {subproject_id} не найден у данного проекта")
 
         self.subprojects.remove(subproject_to_remove)
+        self._update_status()
 
     def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
-        return next(filter(lambda subproject: subproject.id == subproject_id, self.subprojects), None)
+        return next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
 
     def get_stage_by_id(self, stage_id: UUID) -> Stage | None:
         for subproject in self.subprojects:
@@ -60,3 +67,41 @@ class Project:
             if stage is not None:
                 return stage
         return None
+
+    def get_subproject_by_stage_id(self, stage_id: UUID) -> Subproject | None:
+        return next(filter(lambda sp: any(stage.id == stage_id for stage in sp.stages), self.subprojects), None)
+
+    def update(self, name: str | None = None, description: str | None = None) -> None:
+        if name is not None:
+            self.name = ProjectName.create(name)
+        if description is not None:
+            self.description = ProjectDescription.create(description)
+
+    def update_stage(
+        self,
+        stage_id: UUID,
+        name: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+    ) -> Stage:
+        subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
+        if subproject_with_stage is None:
+            raise DomainError(f"Подпроект с этапом {stage_id} не найден")
+        stage = subproject_with_stage.update_stage(stage_id, name, description, status)
+        self._update_status()
+        return stage
+
+    def remove_stage(self, stage_id: UUID) -> None:
+        subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
+        subproject_with_stage.remove_stage(stage_id)
+        self._update_status()
+
+    def update_subproject(
+        self,
+        subproject_id: UUID,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> Subproject:
+        subproject = next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
+        subproject.update(name, description)
+        return subproject

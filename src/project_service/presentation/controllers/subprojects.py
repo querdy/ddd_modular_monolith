@@ -4,14 +4,18 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, delete
+from litestar import Controller, post, get, delete, patch
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
-from src.project_service.application.use_cases.write.subproject import CreateSubprojectUseCase, DeleteSubprojectUseCase
+from src.project_service.application.use_cases.write.subproject import (
+    CreateSubprojectUseCase,
+    DeleteSubprojectUseCase,
+    UpdateSubprojectUseCase,
+)
 from src.project_service.domain.entities.subproject import Subproject
 from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
@@ -19,11 +23,13 @@ from src.project_service.presentation.dto.subproject import (
     SubprojectCreateResponseDTO,
     SubprojectResponseDTO,
     SubprojectShortResponseDTO,
+    SubprojectUpdateRequestDTO,
 )
 from src.project_service.presentation.pagination import SubprojectOffsetPagination
 from src.project_service.presentation.schemas.subproject import (
     SubprojectCreateRequestSchema,
     FilterSubprojectRequestSchema,
+    SubprojectUpdateRequestSchema,
 )
 
 
@@ -66,7 +72,7 @@ class SubProjectsController(Controller):
         result = await use_case.execute(limit, offset, **asdict(filters))
         return result
 
-    @get(path="/{subproject_id: uuid}", return_dto=SubprojectResponseDTO, summary="Получение подпроекта по ID")
+    @get(path="/{subproject_id: uuid}", return_dto=SubprojectShortResponseDTO, summary="Получение подпроекта по ID")
     @inject
     async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Subproject:
         use_case = GetSubprojectUseCase(uow)
@@ -79,3 +85,12 @@ class SubProjectsController(Controller):
         use_case = DeleteSubprojectUseCase(uow)
         await use_case.execute(subproject_id)
 
+    @patch(path="/{subproject_id: uuid}", dto=SubprojectUpdateRequestDTO, summary="Обновление подпроекта")
+    @inject
+    async def update(
+        self, subproject_id: UUID, data: DTOData[SubprojectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
+    ) -> Subproject:
+        data_instance = data.create_instance()
+        use_case = UpdateSubprojectUseCase(uow)
+        result = await use_case.execute(subproject_id, data_instance.name, data_instance.description)
+        return result
