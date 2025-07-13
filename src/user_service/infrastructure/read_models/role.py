@@ -1,9 +1,6 @@
-from dataclasses import dataclass
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
-
-from src.user_service.domain.value_objects.role_name import RoleName
 
 
 class PermissionRead(BaseModel):

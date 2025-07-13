@@ -13,7 +13,7 @@ from litestar.openapi.plugins import (
 )
 from litestar.openapi.spec import Components, SecurityScheme
 
-from src.common.di import MessagingProvider
+from src.common.di.message_bus import MessagingProvider
 from src.common.message_bus.broker import broker
 from src.project_service.di.uow import UoWProjectServiceProvider
 from src.project_service.presentation.controllers.projects import ProjectsController
@@ -21,6 +21,7 @@ from src.project_service.presentation.controllers.stages import StagesController
 from src.project_service.presentation.controllers.subprojects import SubProjectsController
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.presentation.controllers.auth import AuthController
+from src.user_service.presentation.controllers.permissions import PermissionController
 from src.user_service.presentation.controllers.roles import RoleController
 from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
@@ -31,6 +32,7 @@ app = Litestar(
         AuthController,
         UserController,
         RoleController,
+        PermissionController,
         ProjectsController,
         SubProjectsController,
         StagesController,

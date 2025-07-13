@@ -28,7 +28,7 @@ from src.project_service.presentation.dto.subproject import (
 from src.project_service.presentation.pagination import SubprojectOffsetPagination
 from src.project_service.presentation.schemas.subproject import (
     SubprojectCreateRequestSchema,
-    FilterSubprojectRequestSchema,
+    FilterSubprojectsRequestSchema,
     SubprojectUpdateRequestSchema,
 )
 
@@ -65,7 +65,7 @@ class SubProjectsController(Controller):
         self,
         limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
         offset: Annotated[int, Parameter(ge=0, default=0)],
-        filters: FilterSubprojectRequestSchema,
+        filters: FilterSubprojectsRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
     ) -> OffsetPagination[Subproject]:
         use_case = GetSubprojectsUseCase(uow)

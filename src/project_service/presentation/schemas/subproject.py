@@ -10,7 +10,7 @@ class SubprojectCreateRequestSchema:
 
 
 @dataclass
-class FilterSubprojectRequestSchema:
+class FilterSubprojectsRequestSchema:
     project_id: UUID = None
 
 
