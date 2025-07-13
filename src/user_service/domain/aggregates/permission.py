@@ -8,7 +8,7 @@ from src.user_service.domain.value_objects.permission_description import (
 from src.user_service.domain.value_objects.permission_code import PermissionCode
 
 
-@dataclass(frozen=True)
+@dataclass(slots=True)
 class Permission:
     id: UUID
     code: PermissionCode

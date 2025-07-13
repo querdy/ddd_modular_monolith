@@ -10,6 +10,7 @@ from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
 from loguru import logger
 
+from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.stage import GetStageUseCase, GetStagesUseCase
 from src.project_service.application.use_cases.write.stage import (
@@ -51,19 +52,18 @@ class StagesController(Controller):
     @get(
         path="",
         return_dto=StageShortResponseDTO,
-        dependencies={"filters": get_stage_filters},
+        dependencies={"filters": get_stage_filters, "pagination": get_limit_offset_filters},
         summary="Получение этапов",
     )
     @inject
     async def list(
         self,
-        limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
-        offset: Annotated[int, Parameter(ge=0, default=0)],
+        pagination: LimitOffsetFilterRequest,
         filters: FilterStageRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
     ) -> OffsetPagination[Stage]:
         use_case = GetStagesUseCase(uow)
-        result = await use_case.execute(limit, offset, **asdict(filters))
+        result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
     @get(path="/{stage_id: uuid}", return_dto=StageResponseDTO, summary="Получение этапа по ID")

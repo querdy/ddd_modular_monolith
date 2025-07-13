@@ -9,6 +9,7 @@ from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
 
+from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
 from src.project_service.application.use_cases.write.subproject import (
@@ -57,19 +58,18 @@ class SubProjectsController(Controller):
     @get(
         path="",
         return_dto=SubprojectShortResponseDTO,
-        dependencies={"filters": get_subproject_filters},
+        dependencies={"filters": get_subproject_filters, "pagination": get_limit_offset_filters},
         summary="Получение подпроектов",
     )
     @inject
     async def list(
         self,
-        limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
-        offset: Annotated[int, Parameter(ge=0, default=0)],
+        pagination: LimitOffsetFilterRequest,
         filters: FilterSubprojectsRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
     ) -> OffsetPagination[Subproject]:
         use_case = GetSubprojectsUseCase(uow)
-        result = await use_case.execute(limit, offset, **asdict(filters))
+        result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
     @get(path="/{subproject_id: uuid}", return_dto=SubprojectShortResponseDTO, summary="Получение подпроекта по ID")

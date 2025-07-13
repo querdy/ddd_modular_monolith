@@ -6,6 +6,7 @@ from dishka.integrations.litestar import inject
 from litestar import Controller, post, get, delete, patch
 from litestar.dto import DTOData
 
+from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
 from src.project_service.application.use_cases.write.project import (
@@ -38,16 +39,15 @@ class ProjectsController(Controller):
         result = await use_case.execute(data_instance.name, data_instance.description)
         return result
 
-    @get(path="", return_dto=ProjectShortResponseDTO, summary="Получить проекты")
+    @get(path="", return_dto=ProjectShortResponseDTO, dependencies={"pagination": get_limit_offset_filters}, summary="Получить проекты")
     @inject
-    async def get_many(
+    async def list(
         self,
         uow: FromDishka[IProjectServiceUoW],
-        limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
-        offset: Annotated[int, Parameter(ge=0, default=0)],
+        pagination: LimitOffsetFilterRequest,
     ) -> OffsetPagination[Project]:
         use_case = GetProjectsUseCase(uow)
-        result = await use_case.execute(limit, offset)
+        result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result
 
     @get(path="/{project_id: uuid}", return_dto=ProjectShortResponseDTO, summary="Получение проекта по ID")

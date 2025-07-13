@@ -1,4 +1,4 @@
-from src.user_service.domain.enities.permission import Permission
+from src.user_service.domain.aggregates.permission import Permission
 
 default_permissions = [
     Permission.create(code="role_read", description="Право на чтение ролей"),

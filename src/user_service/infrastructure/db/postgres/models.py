@@ -57,10 +57,10 @@ class RoleModel(IdBase):
     __tablename__ = "roles"
 
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
     permissions: Mapped[list["PermissionModel"]] = relationship(
         secondary="role_permissions", back_populates="roles", lazy="selectin"
     )
-
     role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(back_populates="role", lazy="selectin")
 
 
