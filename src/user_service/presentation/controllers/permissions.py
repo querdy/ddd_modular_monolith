@@ -8,6 +8,7 @@ from litestar.pagination import OffsetPagination
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.read.permission import GetPermissionsUseCase
+from src.user_service.application.use_cases.write.permission import CreatePermissionUseCase
 from src.user_service.domain.aggregates.permission import Permission
 from src.user_service.presentation.di.filters import get_permissions_filters
 from src.user_service.presentation.schemas.permission import FilterPermissionsRequestSchema
