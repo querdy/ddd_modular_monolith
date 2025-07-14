@@ -2,6 +2,7 @@ from dishka.integrations.litestar import setup_dishka, LitestarProvider
 from dishka import make_async_container
 
 from litestar import Litestar, get, Router
+from litestar.config.cors import CORSConfig
 from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -46,6 +47,7 @@ app = Litestar(
     middleware=[DefineMiddleware(AuthMiddleware)],
     on_startup=[broker.start],
     on_shutdown=[broker.close],
+    cors_config=CORSConfig(allow_origins=["*"]),
     openapi_config=OpenAPIConfig(
         title="Litestar Example",
         description="Example of litestar",

@@ -104,4 +104,4 @@ class StagesController(Controller):
     ) -> Stage:
         data_instance = data.create_instance()
         use_case = ChangeStageStatusUseCase(uow)
-        result = await use_case.execute(stage_ud, data_instance.status, data_instance.message, UUID(request.auth.sub))
+        result = await use_case.execute(stage_ud, data_instance.status, UUID(request.auth.sub), data_instance.message)
