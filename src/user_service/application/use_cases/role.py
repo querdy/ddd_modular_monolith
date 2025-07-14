@@ -20,12 +20,7 @@ class GetOrCreateDefaultRoleUseCase:
         async with self.uow:
             role = await self.uow.roles.get_by_name(self.default_role_name)
             if role is None:
-                logger.info(default_permissions)
                 permissions = await CreateDefaultPermissionsUseCase(self.uow).execute(default_permissions)
-                logger.info(permissions)
-        async with self.uow:
-            for per in permissions:
-                logger.info(await self.uow.permissions.get(per.id))
         async with self.uow:
             role = Role.create(name=self.default_role_name)
             # await self.uow.roles.add(role)
@@ -74,6 +69,6 @@ class CreateRoleUseCase:
             exiting_role = await self.uow.roles.get_by_name(role_name)
             if exiting_role:
                 raise ApplicationError(f"Роль с именем {role_name} уже существует")
-            role = Role.create(name=role_name, permissions=[])
+            role = Role.create(name=role_name)
             await self.uow.roles.add(role)
             return role
