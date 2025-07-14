@@ -12,7 +12,7 @@ from src.user_service.infrastructure.read_models.role import RoleRead
 from src.user_service.presentation.dto.role import (
     RoleWithPermissionsResponseDTO,
     RoleShortResponseDTO,
-    CreateRoleRequestDTO,
+    CreateRoleRequestDTO, UpdateRoleRequestDTO,
 )
 from src.user_service.presentation.schemas.role import CreateRoleRequestSchema
 
@@ -43,7 +43,7 @@ class RoleController(Controller):
         result = await use_case.execute(data_instance.name)
         return result
 
-    @put(path="/{role_id: uuid}", summary="Полное обновление роли")
+    @put(path="/{role_id: uuid}", dto=UpdateRoleRequestDTO, summary="Полное обновление роли")
     @inject
-    async def put(self, ) -> None:
+    async def put(self, data: DTOData[Role]) -> Role:
         ...

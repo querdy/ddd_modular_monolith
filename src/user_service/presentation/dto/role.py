@@ -18,6 +18,8 @@ class RoleShortResponseDTO(DataclassDTO[Role]):
         },
     )
 
+class UpdateRoleRequestDTO(DataclassDTO[Role]):
+    config = DTOConfig(exclude={"id", })
 
 class CreateRoleRequestDTO(DataclassDTO[CreateRoleRequestSchema]): ...
 
