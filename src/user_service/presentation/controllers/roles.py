@@ -2,7 +2,7 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, get, post
+from litestar import Controller, get, post, put
 from litestar.dto import DTOData
 
 from src.user_service.application.protocols import IUserServiceUoW
@@ -42,3 +42,8 @@ class RoleController(Controller):
         use_case = CreateRoleUseCase(uow)
         result = await use_case.execute(data_instance.name)
         return result
+
+    @put(path="/{role_id: uuid}", summary="Полное обновление роли")
+    @inject
+    async def put(self, ) -> None:
+        ...

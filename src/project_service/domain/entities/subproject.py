@@ -3,6 +3,7 @@ from typing import Self
 from uuid import UUID, uuid4
 
 from src.common.exceptions.domain import DomainError
+from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage, StageStatus
 from src.project_service.domain.value_objects.enums import SubprojectStatus
 from src.project_service.domain.value_objects.stage_description import StageDescription
@@ -67,6 +68,13 @@ class Subproject:
         if stage is None:
             raise DomainError(f"Этап с ID {stage_id} не найден")
         stage.update(name, description)
+        return stage
+
+    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> Stage:
+        stage = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
+        if stage is None:
+            raise DomainError(f"Этап с ID {stage_id} не найден")
+        stage.change_status(status, message)
         self._update_status()
         return stage
 

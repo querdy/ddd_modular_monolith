@@ -53,7 +53,7 @@ class StagesController(Controller):
 
     @get(
         path="",
-        return_dto=StageShortResponseDTO,
+        return_dto=StageResponseDTO,
         dependencies={"filters": get_stage_filters, "pagination": get_limit_offset_filters},
         summary="Получение этапов",
     )
@@ -88,7 +88,7 @@ class StagesController(Controller):
     ) -> Stage:
         data_instance = data.create_instance()
         use_case = UpdateStageUseCase(uow)
-        result = await use_case.execute(stage_id, data_instance.name, data_instance.description, data_instance.status)
+        result = await use_case.execute(stage_id, data_instance.name, data_instance.description)
         return result
 
     @delete(path="/{stage_id: uuid}", summary="Удаление этапа")
@@ -97,11 +97,12 @@ class StagesController(Controller):
         use_case = DeleteStageUseCase(uow)
         await use_case.execute(stage_id)
 
-    @post(path="/{stage_ud: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
+    @post(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
     @inject
     async def change_status(
-        self, request: Request, stage_ud: UUID, data: DTOData[ChangeStageStatusRequestSchema], uow: FromDishka[IProjectServiceUoW]
+        self, request: Request, stage_id: UUID, data: DTOData[ChangeStageStatusRequestSchema], uow: FromDishka[IProjectServiceUoW]
     ) -> Stage:
         data_instance = data.create_instance()
         use_case = ChangeStageStatusUseCase(uow)
-        result = await use_case.execute(stage_ud, data_instance.status, UUID(request.auth.sub), data_instance.message)
+        result = await use_case.execute(stage_id, data_instance.status, UUID(request.auth.sub), data_instance.message)
+        return result

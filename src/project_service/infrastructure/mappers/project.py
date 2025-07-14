@@ -33,7 +33,7 @@ def _(obj: ProjectModel) -> Project:
     return Project(
         id=obj.id,
         name=ProjectName(obj.name),
-        description=ProjectDescription(obj.description),
+        description=ProjectDescription(obj.description) if obj.description else None,
         status=ProjectStatus(obj.status),
         subprojects=[subproject_to_domain(subproject) for subproject in obj.subprojects],
     )

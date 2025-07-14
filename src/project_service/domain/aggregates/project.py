@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Self
 from uuid import UUID, uuid4
 
+from loguru import logger
+
 from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
@@ -88,11 +90,15 @@ class Project:
         if subproject_with_stage is None:
             raise DomainError(f"Подпроект с этапом {stage_id} не найден")
         stage = subproject_with_stage.update_stage(stage_id, name, description)
-        self._update_status()
         return stage
 
-    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> None:
-        ...
+    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> Stage:
+        subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
+        if subproject_with_stage is None:
+            raise DomainError(f"Подпроект с этапом {stage_id} не найден")
+        stage = subproject_with_stage.change_stage_status(stage_id, status, message)
+        self._update_status()
+        return stage
 
     def remove_stage(self, stage_id: UUID) -> None:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)

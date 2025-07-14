@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 from uuid import UUID, uuid4
 
+from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.value_objects.enums import StageStatus
 from src.project_service.domain.value_objects.stage_description import StageDescription
@@ -33,3 +34,12 @@ class Stage:
             self.description = StageDescription.create(description)
         if status is not None:
             self.status = StageStatus(status)
+
+    def change_status(self, status: str, message: Message | None = None) -> None:
+        if status == StageStatus.CONFIRMED and message is None:
+            raise DomainError(f"Нельзя установить статус {status} без сообщения")
+        if message is not None:
+            if not isinstance(message, Message):
+                raise DomainError(f"Передан некорректный объект сообщения")
+            self.messages.append(message)
+        self.status = StageStatus(status)

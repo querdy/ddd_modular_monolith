@@ -4,6 +4,7 @@ from src.project_service.domain.entities.stage import Stage, StageStatus
 from src.project_service.domain.value_objects.stage_description import StageDescription
 from src.project_service.domain.value_objects.stage_name import StageName
 from src.project_service.infrastructure.db.postgres.models import StageModel
+from src.project_service.infrastructure.mappers.message import message_to_orm, message_to_domain
 
 
 @singledispatch
@@ -13,7 +14,7 @@ def stage_to_orm(obj) -> StageModel:
 
 @stage_to_orm.register
 def _(obj: Stage) -> StageModel:
-    return StageModel(id=obj.id, name=obj.name, description=obj.description, status=obj.status)
+    return StageModel(id=obj.id, name=obj.name, description=obj.description, status=obj.status, messages=[message_to_orm(message) for message in obj.messages])
 
 
 @singledispatch
@@ -26,7 +27,7 @@ def _(obj: StageModel) -> Stage:
     return Stage(
         id=obj.id,
         name=StageName(obj.name),
-        description=StageDescription(obj.description),
+        description=StageDescription(obj.description) if obj.description else None,
         status=StageStatus(obj.status),
-        messages=[],
+        messages=[message_to_domain(message) for message in obj.messages],
     )

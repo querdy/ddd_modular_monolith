@@ -27,10 +27,10 @@ class UpdateStageUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, stage_id: UUID, name: str | None, description: str | None, status: str | None) -> Stage:
+    async def execute(self, stage_id: UUID, name: str | None, description: str | None) -> Stage:
         async with self.uow:
             project = await self.uow.projects.get_by_stage(stage_id)
-            stage = project.update_stage(stage_id, name, description, status)
+            stage = project.update_stage(stage_id, name, description)
             await self.uow.projects.update(project)
             return stage
 
@@ -50,8 +50,10 @@ class ChangeStageStatusUseCase:
         self.uow = uow
 
     async def execute(self, stage_id: UUID, status: str, user_id: UUID, message: str | None = None) -> Stage:
-        if message is not None:
-            message = Message.create(user_id, message)
-        project = await self.uow.projects.get_by_stage(stage_id)
-
-
+        async with self.uow:
+            if message is not None:
+                message = Message.create(user_id, message)
+            project = await self.uow.projects.get_by_stage(stage_id)
+            new_stage = project.change_stage_status(stage_id, status, message)
+            await self.uow.projects.update(project)
+            return new_stage
