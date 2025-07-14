@@ -12,4 +12,4 @@ class Base(AsyncAttrs, DeclarativeBase):
 class IdBase(Base):
     __abstract__ = True
 
-    id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True), primary_key=True, nullable=False)

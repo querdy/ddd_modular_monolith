@@ -41,6 +41,11 @@ class RoleRepository:
         orm_model = role_to_orm(role)
         self.session.add(orm_model)
 
+    async def update(self, role: Role) -> Role:
+        orm_model = role_to_orm(role)
+        new_role = await self.session.merge(orm_model)
+        return role_to_domain(new_role)
+
 
 class RoleReadRepository:
     def __init__(self, session: AsyncSession):

@@ -1,13 +1,14 @@
 from uuid import UUID
 
 from sqlalchemy import select, func
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.domain.aggregates.permission import Permission
 from src.user_service.infrastructure.db.postgres.models import PermissionModel, RoleModel
 from src.user_service.infrastructure.mappers.role import permission_to_orm, permission_to_domain
 from src.user_service.infrastructure.read_models.permission import PermissionRead
-from src.user_service.infrastructure.read_models.role import RoleRead
 
 
 class PermissionRepository:
@@ -22,6 +23,15 @@ class PermissionRepository:
         stmt = select(PermissionModel).where(PermissionModel.id == permission_id)
         result = await self.session.execute(stmt)
         orm_permission = result.scalar()
+        return permission_to_domain(orm_permission)
+
+    async def get_by_code(self, code: str) -> Permission:
+        stmt = select(PermissionModel).where(PermissionModel.code == code)
+        result = await self.session.execute(stmt)
+        try:
+            orm_permission = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Пользователь с code {code} не найден")
         return permission_to_domain(orm_permission)
 
 

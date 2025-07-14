@@ -12,8 +12,8 @@ class Role:
     permission_ids: list[UUID]
 
     @classmethod
-    def create(cls, name: str, permission_ids: list[UUID]) -> Self:
-        return Role(id=uuid4(), name=RoleName.create(name), permission_ids=permission_ids)
+    def create(cls, name: str) -> Self:
+        return Role(id=uuid4(), name=RoleName.create(name), permission_ids=[])
 
     def add_permission(self, permission_id: UUID):
         if permission_id not in self.permission_ids:

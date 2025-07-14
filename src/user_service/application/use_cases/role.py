@@ -1,9 +1,11 @@
 from uuid import UUID
 
 from litestar.dto import DTOData
+from loguru import logger
 
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
+from src.user_service.application.use_cases.write.permission import CreateDefaultPermissionsUseCase
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.default_objects.permissions import default_permissions
 from src.user_service.infrastructure.read_models.role import RoleRead
@@ -18,8 +20,18 @@ class GetOrCreateDefaultRoleUseCase:
         async with self.uow:
             role = await self.uow.roles.get_by_name(self.default_role_name)
             if role is None:
-                role = Role.create(name=self.default_role_name, permissions=default_permissions)
-                await self.uow.roles.add(role)
+                logger.info(default_permissions)
+                permissions = await CreateDefaultPermissionsUseCase(self.uow).execute(default_permissions)
+                logger.info(permissions)
+        async with self.uow:
+            for per in permissions:
+                logger.info(await self.uow.permissions.get(per.id))
+        async with self.uow:
+            role = Role.create(name=self.default_role_name)
+            # await self.uow.roles.add(role)
+            for permission in permissions:
+                role.add_permission(permission.id)
+            await self.uow.roles.update(role)
             return role
 
 

@@ -1,7 +1,11 @@
 from dishka import FromDishka
+from loguru import logger
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.domain.aggregates.permission import Permission
+from src.user_service.domain.default_objects.permissions import default_permissions
 
 
 class CreatePermissionUseCase:
@@ -13,3 +17,22 @@ class CreatePermissionUseCase:
             new_permission = Permission.create(code, description)
             await self.uow.permissions.add(new_permission)
             return new_permission
+
+
+class CreateDefaultPermissionsUseCase:
+    def __init__(self, uow: FromDishka[IUserServiceUoW]):
+        self.uow = uow
+
+    async def execute(self, permissions: list[Permission]) -> list[Permission]:
+        async with self.uow:
+            permission_for_return = []
+            logger.info(permissions)
+            for permission in permissions:
+                try:
+                    new_permission = await self.uow.permissions.get_by_code(permission.code)
+                    permission_for_return.append(new_permission)
+                except InfrastructureError:
+                    await self.uow.permissions.add(permission)
+                    permission_for_return.append(permission)
+            logger.info(permission_for_return)
+            return permission_for_return

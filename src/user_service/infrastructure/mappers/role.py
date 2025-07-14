@@ -51,9 +51,12 @@ def _(obj: PermissionModel) -> Permission:
         description=PermissionDescription(obj.description),
     )
 
-
 @singledispatch
 def permission_to_orm(obj: Permission) -> PermissionModel:
+    raise NotImplementedError(f"No orm mapper for {type(obj)}")
+
+@permission_to_orm.register
+def _(obj: Permission) -> PermissionModel:
     return PermissionModel(
         id=obj.id,
         code=obj.code,
