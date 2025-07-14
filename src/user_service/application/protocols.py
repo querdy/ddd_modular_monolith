@@ -4,9 +4,11 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.user_service.domain.aggregates.blacklist import BlacklistedToken
+from src.user_service.domain.aggregates.permission import Permission
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.aggregates.user import User
-from src.user_service.infrastructure.read_models.role import PermissionRead
+from src.user_service.infrastructure.read_models.permission import PermissionRead
+from src.user_service.infrastructure.read_models.role import RoleRead
 from src.user_service.infrastructure.read_models.user import UserRead
 
 
@@ -41,8 +43,17 @@ class IRoleRepository(Protocol):
 class IRoleReadRepository(Protocol):
     """Интерфейс для репозитория чтения ролей."""
 
-    async def permissions_count(self, **filters) -> int: ...
-    async def get_permissions(self, limit: int, offset: int, **filters) -> list[PermissionRead]: ...
+    async def get(self, role_id: UUID) -> RoleRead: ...
+
+
+class IPermissionRepository(Protocol):
+    async def add(self, permission: Permission): ...
+    async def get(self, permission_id: UUID) -> Permission: ...
+
+
+class IPermissionReadRepository(Protocol):
+    async def count(self, **filters) -> int: ...
+    async def get_many(self, limit: int, offset: int, **filters) -> list[PermissionRead]: ...
 
 
 class IBlacklistRepository(Protocol):
@@ -57,6 +68,8 @@ class IUserServiceUoW(Protocol):
     users_read: IUserReadRepository
     roles: IRoleRepository
     roles_read: IRoleReadRepository
+    permissions: IPermissionRepository
+    permissions_read: IPermissionReadRepository
     blacklist: IBlacklistRepository
 
     async def __aenter__(self) -> Self: ...

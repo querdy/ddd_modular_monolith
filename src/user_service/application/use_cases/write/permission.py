@@ -8,5 +8,8 @@ class CreatePermissionUseCase:
     def __init__(self, uow: FromDishka[IUserServiceUoW]):
         self.uow = uow
 
-    async def execute(self) -> Permission:
-        ...
+    async def execute(self, code: str, description: str) -> Permission:
+        async with self.uow:
+            new_permission = Permission.create(code, description)
+            await self.uow.permissions.add(new_permission)
+            return new_permission

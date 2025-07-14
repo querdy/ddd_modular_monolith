@@ -8,6 +8,7 @@ from litestar.dto import DTOData
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.role import GetRolesUseCase, GetRoleByIdUseCase, CreateRoleUseCase
 from src.user_service.domain.aggregates.role import Role
+from src.user_service.infrastructure.read_models.role import RoleRead
 from src.user_service.presentation.dto.role import (
     RoleWithPermissionsResponseDTO,
     RoleShortResponseDTO,
@@ -29,7 +30,7 @@ class RoleController(Controller):
 
     @get(path="/{role_id: uuid}", return_dto=RoleWithPermissionsResponseDTO, summary="Получить роль по ID")
     @inject
-    async def get_by_id(self, role_id: UUID, uow: FromDishka[IUserServiceUoW]) -> Role:
+    async def get_by_id(self, role_id: UUID, uow: FromDishka[IUserServiceUoW]) -> RoleRead:
         use_case = GetRoleByIdUseCase(uow)
         result = await use_case.execute(role_id)
         return result

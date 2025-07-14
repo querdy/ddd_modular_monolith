@@ -1,7 +1,7 @@
 from dishka.integrations.litestar import setup_dishka, LitestarProvider
 from dishka import make_async_container
 
-from litestar import Litestar, get
+from litestar import Litestar, get, Router
 from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -26,8 +26,8 @@ from src.user_service.presentation.controllers.roles import RoleController
 from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
 
-app = Litestar(
-    debug=True,
+router = Router(
+    path="/api",
     route_handlers=[
         AuthController,
         UserController,
@@ -36,7 +36,12 @@ app = Litestar(
         ProjectsController,
         SubProjectsController,
         StagesController,
-    ],
+    ]
+)
+
+app = Litestar(
+    debug=True,
+    route_handlers=[router],
     # on_app_init=[jwt_refresh_auth.on_app_init, jwt_access_auth.on_app_init],
     middleware=[DefineMiddleware(AuthMiddleware)],
     on_startup=[broker.start],

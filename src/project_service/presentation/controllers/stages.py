@@ -4,7 +4,7 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, patch, delete
+from litestar import Controller, post, get, patch, delete, Request
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
@@ -16,7 +16,7 @@ from src.project_service.application.use_cases.read.stage import GetStageUseCase
 from src.project_service.application.use_cases.write.stage import (
     CreateStageUseCase,
     UpdateStageUseCase,
-    DeleteStageUseCase,
+    DeleteStageUseCase, ChangeStageStatusUseCase,
 )
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.enums import StageStatus
@@ -27,11 +27,13 @@ from src.project_service.presentation.dto.stage import (
     StageResponseDTO,
     StageShortResponseDTO,
     StageUpdateRequestDTO,
+    ChangeStageStatusRequestDTO,
 )
 from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
     FilterStageRequestSchema,
     StageUpdateRequestSchema,
+    ChangeStageStatusRequestSchema,
 )
 
 
@@ -94,3 +96,12 @@ class StagesController(Controller):
     async def delete(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
         use_case = DeleteStageUseCase(uow)
         await use_case.execute(stage_id)
+
+    @post(path="/{stage_ud: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
+    @inject
+    async def change_status(
+        self, request: Request, stage_ud: UUID, data: DTOData[ChangeStageStatusRequestSchema], uow: FromDishka[IProjectServiceUoW]
+    ) -> Stage:
+        data_instance = data.create_instance()
+        use_case = ChangeStageStatusUseCase(uow)
+        result = await use_case.execute(stage_ud, data_instance.status, data_instance.message, UUID(request.auth.sub))

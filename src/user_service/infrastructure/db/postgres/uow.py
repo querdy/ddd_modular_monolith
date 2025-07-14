@@ -9,9 +9,15 @@ from src.user_service.application.protocols import (
     IUserReadRepository,
     IBlacklistRepository,
     IRoleReadRepository,
+    IPermissionRepository,
+    IPermissionReadRepository,
 )
 from src.user_service.config import settings
 from src.user_service.infrastructure.db.postgres.repositories.blacklist import BlacklistRepository
+from src.user_service.infrastructure.db.postgres.repositories.permission import (
+    PermissionRepository,
+    PermissionReadRepository,
+)
 from src.user_service.infrastructure.db.postgres.repositories.role import RoleRepository, RoleReadRepository
 from src.user_service.infrastructure.db.postgres.repositories.user import UserRepository, UserReadRepository
 
@@ -21,6 +27,8 @@ class UserServiceUoW:
     users_read: IUserReadRepository
     roles: IRoleRepository
     roles_read: IRoleReadRepository
+    permissions: IPermissionRepository
+    permissions_read: IPermissionReadRepository
     blacklist: IBlacklistRepository
 
     def __init__(self, session: AsyncSession):
@@ -31,6 +39,8 @@ class UserServiceUoW:
         self.users_read = UserReadRepository(self.session)
         self.roles = RoleRepository(self.session)
         self.roles_read = RoleReadRepository(self.session)
+        self.permissions = PermissionRepository(self.session)
+        self.permissions_read = PermissionReadRepository(self.session)
         self.blacklist = BlacklistRepository(self.session)
         return self
 

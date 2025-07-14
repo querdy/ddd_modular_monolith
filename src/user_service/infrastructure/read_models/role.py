@@ -2,13 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-
-class PermissionRead(BaseModel):
-    id: UUID
-    code: str
-    description: str
-
-    model_config = ConfigDict(from_attributes=True)
+from src.user_service.infrastructure.read_models.permission import PermissionRead
 
 
 class RoleRead(BaseModel):

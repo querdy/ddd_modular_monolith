@@ -4,6 +4,7 @@ from dishka import FromDishka
 from loguru import logger
 
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
 
 
@@ -43,3 +44,13 @@ class DeleteStageUseCase:
             project = await self.uow.projects.get_by_stage(stage_id)
             project.remove_stage(stage_id)
             await self.uow.projects.update(project)
+
+class ChangeStageStatusUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self, stage_id: UUID, status: str, user_id: UUID, message: str | None = None) -> Stage:
+        if message is not None:
+            message = Message.create(user_id, message)
+        project = await self.uow.projects.get_by_stage(stage_id)
+

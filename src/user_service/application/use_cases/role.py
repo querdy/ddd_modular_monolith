@@ -6,6 +6,7 @@ from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.default_objects.permissions import default_permissions
+from src.user_service.infrastructure.read_models.role import RoleRead
 
 
 class GetOrCreateDefaultRoleUseCase:
@@ -46,9 +47,9 @@ class GetRoleByIdUseCase:
     def __init__(self, uow: IUserServiceUoW):
         self.uow = uow
 
-    async def execute(self, role_id: UUID) -> Role:
+    async def execute(self, role_id: UUID) -> RoleRead:
         async with self.uow:
-            role = await self.uow.roles.get(role_id)
+            role = await self.uow.roles_read.get(role_id)
             return role
 
 

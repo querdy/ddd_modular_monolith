@@ -39,7 +39,12 @@ class ProjectsController(Controller):
         result = await use_case.execute(data_instance.name, data_instance.description)
         return result
 
-    @get(path="", return_dto=ProjectShortResponseDTO, dependencies={"pagination": get_limit_offset_filters}, summary="Получить проекты")
+    @get(
+        path="",
+        return_dto=ProjectShortResponseDTO,
+        dependencies={"pagination": get_limit_offset_filters},
+        summary="Получить проекты",
+    )
     @inject
     async def list(
         self,

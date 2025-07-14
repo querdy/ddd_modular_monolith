@@ -20,4 +20,9 @@ class FilterStageRequestSchema:
 class StageUpdateRequestSchema:
     name: str | None = None
     description: str | None = None
-    status: StageStatus | None = None
+
+
+@dataclass
+class ChangeStageStatusRequestSchema:
+    status: StageStatus
+    message: str | None = None

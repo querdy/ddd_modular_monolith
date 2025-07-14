@@ -8,7 +8,7 @@ class PermissionOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
         self.uow = uow
 
     async def get_total(self, **filters) -> int:
-        return await self.uow.roles_read.permissions_count(**filters)
+        return await self.uow.permissions_read.count(**filters)
 
     async def get_items(self, limit: int, offset: int, **filters) -> list[PermissionRead]:
-        return await self.uow.roles_read.get_permissions(limit, offset, **filters)
+        return await self.uow.permissions_read.get_many(limit, offset, **filters)

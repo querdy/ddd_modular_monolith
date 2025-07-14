@@ -15,12 +15,5 @@ class AssignRoleRequestSchema:
 
 
 @dataclass
-class RoleResponseSchema:
-    id: UUID
-    name: str
-    permissions: list[PermissionResponseSchema]
-
-
-@dataclass
 class CreateRoleRequestSchema:
     name: str

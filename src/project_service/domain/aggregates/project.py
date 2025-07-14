@@ -3,6 +3,7 @@ from typing import Self
 from uuid import UUID, uuid4
 
 from src.common.exceptions.domain import DomainError
+from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject, SubprojectStatus
 from src.project_service.domain.value_objects.enums import ProjectStatus
@@ -82,14 +83,16 @@ class Project:
         stage_id: UUID,
         name: str | None = None,
         description: str | None = None,
-        status: str | None = None,
     ) -> Stage:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
         if subproject_with_stage is None:
             raise DomainError(f"Подпроект с этапом {stage_id} не найден")
-        stage = subproject_with_stage.update_stage(stage_id, name, description, status)
+        stage = subproject_with_stage.update_stage(stage_id, name, description)
         self._update_status()
         return stage
+
+    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> None:
+        ...
 
     def remove_stage(self, stage_id: UUID) -> None:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
