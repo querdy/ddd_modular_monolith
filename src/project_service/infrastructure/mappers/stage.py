@@ -14,7 +14,13 @@ def stage_to_orm(obj) -> StageModel:
 
 @stage_to_orm.register
 def _(obj: Stage) -> StageModel:
-    return StageModel(id=obj.id, name=obj.name, description=obj.description, status=obj.status, messages=[message_to_orm(message) for message in obj.messages])
+    return StageModel(
+        id=obj.id,
+        name=obj.name,
+        description=obj.description,
+        status=obj.status,
+        messages=[message_to_orm(message) for message in obj.messages],
+    )
 
 
 @singledispatch

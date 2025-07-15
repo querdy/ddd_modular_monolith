@@ -16,7 +16,8 @@ from src.project_service.application.use_cases.read.stage import GetStageUseCase
 from src.project_service.application.use_cases.write.stage import (
     CreateStageUseCase,
     UpdateStageUseCase,
-    DeleteStageUseCase, ChangeStageStatusUseCase,
+    DeleteStageUseCase,
+    ChangeStageStatusUseCase,
 )
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.enums import StageStatus
@@ -100,7 +101,11 @@ class StagesController(Controller):
     @post(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
     @inject
     async def change_status(
-        self, request: Request, stage_id: UUID, data: DTOData[ChangeStageStatusRequestSchema], uow: FromDishka[IProjectServiceUoW]
+        self,
+        request: Request,
+        stage_id: UUID,
+        data: DTOData[ChangeStageStatusRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
     ) -> Stage:
         data_instance = data.create_instance()
         use_case = ChangeStageStatusUseCase(uow)

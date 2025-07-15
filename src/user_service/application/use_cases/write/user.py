@@ -53,3 +53,16 @@ class AssignRoleUseCase:
             user = await self.uow.users.update(user)
             await self.uow.session.flush()
             return await self.uow.users_read.get(user.id)
+
+
+class UnsignRoleUseCase:
+    def __init__(self, uow: IUserServiceUoW):
+        self.uow = uow
+
+    async def execute(self, user_id: UUID, role_id: UUID) -> UserRead:
+        async with self.uow:
+            user = await self.uow.users.get(user_id)
+            user.remove_role(role_id)
+            user = await self.uow.users.update(user)
+            await self.uow.session.flush()
+            return await self.uow.users_read.get(user.id)

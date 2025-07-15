@@ -14,9 +14,11 @@ def message_to_orm(obj) -> MessageModel:
 def _(obj: Message) -> MessageModel:
     return MessageModel(id=obj.id, timestamp=obj.timestamp, author_id=obj.author_id, text=obj.text)
 
+
 @singledispatch
 def message_to_domain(obj) -> Message:
     raise NotImplementedError(f"No domain mapper for {type(obj)}")
+
 
 @message_to_domain.register
 def _(obj: MessageModel) -> Message:

@@ -11,12 +11,18 @@ class PermissionResponseSchema:
 @dataclass
 class AssignRoleRequestSchema:
     role_id: UUID
-    term: int = None
+    term: int | None = None
+
+
+@dataclass
+class UnsignRoleRequestSchema:
+    role_id: UUID
 
 
 @dataclass
 class CreateRoleRequestSchema:
     name: str
+
 
 @dataclass
 class UpdateRoleRequestSchema:

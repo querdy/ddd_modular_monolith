@@ -37,7 +37,7 @@ router = Router(
         ProjectsController,
         SubProjectsController,
         StagesController,
-    ]
+    ],
 )
 
 app = Litestar(

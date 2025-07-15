@@ -45,6 +45,7 @@ class DeleteStageUseCase:
             project.remove_stage(stage_id)
             await self.uow.projects.update(project)
 
+
 class ChangeStageStatusUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
