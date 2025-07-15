@@ -17,3 +17,8 @@ class AssignRoleRequestSchema:
 @dataclass
 class CreateRoleRequestSchema:
     name: str
+
+@dataclass
+class UpdateRoleRequestSchema:
+    name: str
+    permission_ids: list[UUID]

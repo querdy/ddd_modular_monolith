@@ -25,6 +25,12 @@ class PermissionRepository:
         orm_permission = result.scalar()
         return permission_to_domain(orm_permission)
 
+    async def get_by_ids(self, permission_ids: list[UUID]) -> list[Permission]:
+        stmt = select(PermissionModel).where(PermissionModel.id.in_(permission_ids))
+        result = await self.session.execute(stmt)
+        orm_permissions = result.scalars().all()
+        return [permission_to_domain(permission) for permission in orm_permissions]
+
     async def get_by_code(self, code: str) -> Permission:
         stmt = select(PermissionModel).where(PermissionModel.code == code)
         result = await self.session.execute(stmt)

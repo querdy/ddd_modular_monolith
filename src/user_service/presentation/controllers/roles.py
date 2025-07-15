@@ -7,6 +7,7 @@ from litestar.dto import DTOData
 
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.role import GetRolesUseCase, GetRoleByIdUseCase, CreateRoleUseCase
+from src.user_service.application.use_cases.write.role import UpdateRoleUseCase
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.infrastructure.read_models.role import RoleRead
 from src.user_service.presentation.dto.role import (
@@ -14,7 +15,7 @@ from src.user_service.presentation.dto.role import (
     RoleShortResponseDTO,
     CreateRoleRequestDTO, UpdateRoleRequestDTO,
 )
-from src.user_service.presentation.schemas.role import CreateRoleRequestSchema
+from src.user_service.presentation.schemas.role import CreateRoleRequestSchema, UpdateRoleRequestSchema
 
 
 class RoleController(Controller):
@@ -45,5 +46,8 @@ class RoleController(Controller):
 
     @put(path="/{role_id: uuid}", dto=UpdateRoleRequestDTO, summary="Полное обновление роли")
     @inject
-    async def put(self, data: DTOData[Role]) -> Role:
-        ...
+    async def put(self, role_id: UUID, data: DTOData[UpdateRoleRequestSchema], uow: FromDishka[IUserServiceUoW]) -> Role:
+        data_instance = data.create_instance()
+        use_case = UpdateRoleUseCase(uow)
+        result = await use_case.execute(role_id, data_instance.name, data_instance.permission_ids)
+        return result

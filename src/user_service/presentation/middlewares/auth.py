@@ -35,7 +35,7 @@ class AuthMiddleware(AbstractAuthenticationMiddleware):
         ]:
             return AuthenticationResult(user=None, auth=None)
 
-        if path in ["/auth/refresh", "/auth/logout"]:
+        if path in ["/api/auth/refresh", "/api/auth/logout"]:
             token = connection.cookies.get("refresh_token")
             if token is not None and token.lower().startswith("bearer "):
                 token = token.split(" ")[1]

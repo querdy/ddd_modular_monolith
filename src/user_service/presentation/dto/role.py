@@ -3,7 +3,8 @@ from litestar.plugins.pydantic import PydanticDTO
 
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.infrastructure.read_models.role import RoleRead
-from src.user_service.presentation.schemas.role import CreateRoleRequestSchema, AssignRoleRequestSchema
+from src.user_service.presentation.schemas.role import CreateRoleRequestSchema, AssignRoleRequestSchema, \
+    UpdateRoleRequestSchema
 
 
 class RoleWithPermissionsResponseDTO(PydanticDTO[RoleRead]):
@@ -18,8 +19,7 @@ class RoleShortResponseDTO(DataclassDTO[Role]):
         },
     )
 
-class UpdateRoleRequestDTO(DataclassDTO[Role]):
-    config = DTOConfig(exclude={"id", })
+class UpdateRoleRequestDTO(DataclassDTO[UpdateRoleRequestSchema]): ...
 
 class CreateRoleRequestDTO(DataclassDTO[CreateRoleRequestSchema]): ...
 
