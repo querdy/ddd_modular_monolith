@@ -41,7 +41,7 @@ class ProjectRepository:
         return project_to_domain(orm_project)
 
     async def get_many(self, limit: int, offset: int) -> list[Project]:
-        stmt = select(ProjectModel).limit(limit).offset(offset)
+        stmt = select(ProjectModel).limit(limit).offset(offset).order_by(desc(ProjectModel.created_at))
         result = await self.session.execute(stmt)
         orm_users = result.scalars().all()
         return [project_to_domain(orm_user) for orm_user in orm_users]
