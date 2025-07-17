@@ -18,6 +18,8 @@ def _(obj: Stage) -> StageModel:
         id=obj.id,
         name=obj.name,
         description=obj.description,
+        created_at=obj.created_at,
+        updated_at=obj.updated_at,
         status=obj.status,
         messages=[message_to_orm(message) for message in obj.messages],
     )
@@ -34,6 +36,8 @@ def _(obj: StageModel) -> Stage:
         id=obj.id,
         name=StageName(obj.name),
         description=StageDescription(obj.description) if obj.description else None,
+        created_at=obj.created_at,
+        updated_at=obj.updated_at,
         status=StageStatus(obj.status),
         messages=[message_to_domain(message) for message in obj.messages],
     )

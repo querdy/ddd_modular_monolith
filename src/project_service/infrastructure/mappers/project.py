@@ -18,6 +18,8 @@ def _(obj: Project) -> ProjectModel:
         id=obj.id,
         name=obj.name,
         description=obj.description,
+        created_at=obj.created_at,
+        updated_at=obj.updated_at,
         status=obj.status,
         subprojects=[subproject_to_orm(subproject) for subproject in obj.subprojects],
     )
@@ -34,6 +36,8 @@ def _(obj: ProjectModel) -> Project:
         id=obj.id,
         name=ProjectName(obj.name),
         description=ProjectDescription(obj.description) if obj.description else None,
+        created_at=obj.created_at,
+        updated_at=obj.updated_at,
         status=ProjectStatus(obj.status),
         subprojects=[subproject_to_domain(subproject) for subproject in obj.subprojects],
     )
