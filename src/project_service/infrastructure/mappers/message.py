@@ -12,7 +12,7 @@ def message_to_orm(obj) -> MessageModel:
 
 @message_to_orm.register
 def _(obj: Message) -> MessageModel:
-    return MessageModel(id=obj.id, timestamp=obj.timestamp, author_id=obj.author_id, text=obj.text)
+    return MessageModel(id=obj.id, created_at=obj.created_at, author_id=obj.author_id, text=obj.text)
 
 
 @singledispatch
@@ -22,4 +22,4 @@ def message_to_domain(obj) -> Message:
 
 @message_to_domain.register
 def _(obj: MessageModel) -> Message:
-    return Message(id=obj.id, timestamp=obj.timestamp, author_id=obj.author_id, text=MessageText(obj.text))
+    return Message(id=obj.id, created_at=obj.created_at, author_id=obj.author_id, text=MessageText(obj.text))

@@ -9,7 +9,7 @@ from src.project_service.domain.value_objects.message_text import MessageText
 @dataclass
 class Message:
     id: UUID
-    timestamp: datetime
+    created_at: datetime
     author_id: UUID
     text: MessageText
 
@@ -17,7 +17,7 @@ class Message:
     def create(cls, author_id: UUID, text: str) -> Self:
         return cls(
             id=uuid4(),
-            timestamp=datetime.now(UTC).replace(tzinfo=None),
+            created_at=datetime.now(UTC).replace(tzinfo=None),
             author_id=author_id,
             text=MessageText.create(text),
         )

@@ -71,13 +71,14 @@ class StageModel(IdBase):
         back_populates="stage",
         cascade="all, delete-orphan",
         lazy="selectin",
+        order_by="asc(MessageModel.created_at)",
     )
 
 
 class MessageModel(IdBase):
     __tablename__ = "messages"
 
-    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     author_id: Mapped[UUID] = mapped_column(DBUUID, nullable=False)
     text: Mapped[str] = mapped_column(String(255), nullable=False)
     stage_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("stages.id", ondelete="CASCADE"), nullable=False)

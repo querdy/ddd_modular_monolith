@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, desc, asc
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import contains_eager
 
 from src.common.exceptions.domain import DomainError
 from src.common.exceptions.infrastructure import InfrastructureError
@@ -10,7 +11,8 @@ from src.project_service.application.protocols import IProjectReadRepository
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
-from src.project_service.infrastructure.db.postgres.models import ProjectModel, SubprojectModel, StageModel
+from src.project_service.infrastructure.db.postgres.models import ProjectModel, SubprojectModel, StageModel, \
+    MessageModel
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
@@ -94,7 +96,7 @@ class ProjectReadRepository:
         return result.scalar()
 
     async def get_subprojects(self, limit: int, offset: int, **filters) -> list[Subproject]:
-        stmt = select(SubprojectModel).limit(limit).offset(offset)
+        stmt = select(SubprojectModel).limit(limit).offset(offset).order_by(desc(SubprojectModel.updated_at))
         if project_id := filters.get("project_id", False):
             stmt = stmt.where(SubprojectModel.project_id == project_id)
         result = await self.session.execute(stmt)
@@ -109,9 +111,14 @@ class ProjectReadRepository:
         return result.scalar()
 
     async def get_stages(self, limit: int, offset: int, **filters) -> list[Stage]:
-        stmt = select(StageModel).limit(limit).offset(offset)
+        stmt = (
+            select(StageModel)
+            .order_by(desc(StageModel.updated_at))
+            .limit(limit)
+            .offset(offset)
+        )
         if subproject_id := filters.get("subproject_id", False):
             stmt = stmt.where(StageModel.subproject_id == subproject_id)
         result = await self.session.execute(stmt)
-        orm_stages = result.scalars().all()
+        orm_stages = result.unique().scalars().all()
         return [stage_to_domain(stage) for stage in orm_stages]
