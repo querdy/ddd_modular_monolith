@@ -4,7 +4,7 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, patch, delete, Request
+from litestar import Controller, post, get, patch, delete, Request, put
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
@@ -76,7 +76,7 @@ class StagesController(Controller):
         result = await use_case.execute(stage_id)
         return result
 
-    @patch(
+    @put(
         path="/{stage_id: uuid}",
         dto=StageUpdateRequestDTO,
         return_dto=StageShortResponseDTO,
@@ -98,7 +98,7 @@ class StagesController(Controller):
         use_case = DeleteStageUseCase(uow)
         await use_case.execute(stage_id)
 
-    @post(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
+    @patch(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
     @inject
     async def change_status(
         self,

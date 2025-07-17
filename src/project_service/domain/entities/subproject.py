@@ -61,10 +61,10 @@ class Subproject:
     def update_stage(
         self,
         stage_id: UUID,
-        name: str | None = None,
+        name: str,
         description: str | None = None,
     ) -> Stage:
-        stage = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
+        stage: Stage | None = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
         if stage is None:
             raise DomainError(f"Этап с ID {stage_id} не найден")
         stage.update(name, description)

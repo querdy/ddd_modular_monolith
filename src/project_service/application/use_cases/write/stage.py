@@ -27,7 +27,7 @@ class UpdateStageUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, stage_id: UUID, name: str | None, description: str | None) -> Stage:
+    async def execute(self, stage_id: UUID, name: str, description: str | None) -> Stage:
         async with self.uow:
             project = await self.uow.projects.get_by_stage(stage_id)
             stage = project.update_stage(stage_id, name, description)

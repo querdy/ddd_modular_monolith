@@ -18,7 +18,7 @@ class FilterStageRequestSchema:
 
 @dataclass
 class StageUpdateRequestSchema:
-    name: str | None = None
+    name: str
     description: str | None = None
 
 

@@ -10,7 +10,7 @@ class LimitOffsetFilterRequest:
     offset: int
 
 
-def get_limit_offset_filters(
+async def get_limit_offset_filters(
     limit: Annotated[int, Parameter(ge=1, le=100, default=100)],
     offset: Annotated[int, Parameter(ge=0, default=0)],
 ) -> LimitOffsetFilterRequest:

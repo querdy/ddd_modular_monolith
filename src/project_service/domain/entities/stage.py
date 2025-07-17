@@ -27,13 +27,9 @@ class Stage:
             messages=[],
         )
 
-    def update(self, name: str | None = None, description: str | None = None, status: str | None = None) -> None:
-        if name is not None:
-            self.name = StageName.create(name)
-        if description is not None:
-            self.description = StageDescription.create(description)
-        if status is not None:
-            self.status = StageStatus(status)
+    def update(self, name: str, description: str | None = None) -> None:
+        self.name = StageName.create(name)
+        self.description = StageDescription.create(description) if description else None
 
     def change_status(self, status: str, message: Message | None = None) -> None:
         if status == StageStatus.CONFIRMED and message is None:

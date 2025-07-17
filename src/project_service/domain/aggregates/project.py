@@ -83,7 +83,7 @@ class Project:
     def update_stage(
         self,
         stage_id: UUID,
-        name: str | None = None,
+        name: str,
         description: str | None = None,
     ) -> Stage:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
