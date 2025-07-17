@@ -22,11 +22,9 @@ from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
     SubprojectCreateResponseDTO,
-    SubprojectResponseDTO,
     SubprojectShortResponseDTO,
     SubprojectUpdateRequestDTO,
 )
-from src.project_service.presentation.pagination import SubprojectOffsetPagination
 from src.project_service.presentation.schemas.subproject import (
     SubprojectCreateRequestSchema,
     FilterSubprojectsRequestSchema,

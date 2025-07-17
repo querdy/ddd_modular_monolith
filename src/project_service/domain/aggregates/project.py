@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, UTC
 from typing import Self
 from uuid import UUID, uuid4
 
@@ -18,6 +19,8 @@ class Project:
     id: UUID
     name: ProjectName
     description: ProjectDescription | None
+    created_at: datetime
+    updated_at: datetime
     status: ProjectStatus
     subprojects: list[Subproject]
 
@@ -28,8 +31,10 @@ class Project:
         return cls(
             id=uuid4(),
             name=ProjectName.create(name),
-            status=ProjectStatus.CREATED,
             description=ProjectDescription.create(description) if description else None,
+            created_at=datetime.now(UTC).replace(tzinfo=None),
+            updated_at=datetime.now(UTC).replace(tzinfo=None),
+            status=ProjectStatus.CREATED,
             subprojects=subprojects,
         )
 
@@ -50,6 +55,7 @@ class Project:
             raise DomainError(f"Подпроект с названием {subproject.name} уже существует у данного проекта")
         self.subprojects.append(subproject)
         self._update_status()
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def remove_subproject(self, subproject_id: UUID) -> None:
         subproject_to_remove = next(
@@ -60,6 +66,7 @@ class Project:
 
         self.subprojects.remove(subproject_to_remove)
         self._update_status()
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
         return next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
@@ -79,6 +86,7 @@ class Project:
             self.name = ProjectName.create(name)
         if description is not None:
             self.description = ProjectDescription.create(description)
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def update_stage(
         self,
@@ -104,6 +112,7 @@ class Project:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
         subproject_with_stage.remove_stage(stage_id)
         self._update_status()
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def update_subproject(
         self,

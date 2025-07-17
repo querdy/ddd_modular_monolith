@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, UTC
 from typing import Self
 from uuid import UUID, uuid4
 
@@ -14,6 +15,8 @@ class Stage:
     id: UUID
     name: StageName
     description: StageDescription
+    created_at: datetime
+    updated_at: datetime
     status: StageStatus
     messages: list[Message]
 
@@ -22,6 +25,8 @@ class Stage:
         return cls(
             id=uuid4(),
             name=StageName.create(name),
+            created_at=datetime.now(UTC).replace(tzinfo=None),
+            updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=StageStatus.CREATED,
             description=StageDescription.create(description) if description else None,
             messages=[],
@@ -30,6 +35,7 @@ class Stage:
     def update(self, name: str, description: str | None = None) -> None:
         self.name = StageName.create(name)
         self.description = StageDescription.create(description) if description else None
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def change_status(self, status: str, message: Message | None = None) -> None:
         if status == StageStatus.CONFIRMED and message is None:
@@ -39,3 +45,4 @@ class Stage:
                 raise DomainError(f"Передан некорректный объект сообщения")
             self.messages.append(message)
         self.status = StageStatus(status)
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)

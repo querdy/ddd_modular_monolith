@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime
+from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime, func
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 
@@ -14,6 +14,8 @@ class ProjectModel(IdBase):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     subprojects: Mapped[list["SubprojectModel"]] = relationship(
         "SubprojectModel",
@@ -28,6 +30,8 @@ class SubprojectModel(IdBase):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
 
@@ -49,6 +53,8 @@ class StageModel(IdBase):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     subproject_id: Mapped[UUID] = mapped_column(

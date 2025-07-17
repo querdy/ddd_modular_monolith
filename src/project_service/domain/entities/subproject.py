@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, UTC
 from typing import Self
 from uuid import UUID, uuid4
 
@@ -17,6 +18,8 @@ class Subproject:
     id: UUID
     name: SubprojectName
     description: SubprojectDescription
+    created_at: datetime
+    updated_at: datetime
     status: SubprojectStatus
     stages: list[Stage]
 
@@ -27,6 +30,8 @@ class Subproject:
         return cls(
             id=uuid4(),
             name=SubprojectName.create(name),
+            created_at=datetime.now(UTC).replace(tzinfo=None),
+            updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=SubprojectStatus.CREATED,
             description=SubprojectDescription.create(description) if description else None,
             stages=stages,
@@ -49,6 +54,7 @@ class Subproject:
             raise DomainError(f"Этап с названием {stage.name} уже существует у данного подпроекта")
         self.stages.append(stage)
         self._update_status()
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def remove_stage(self, stage_id: UUID) -> None:
         stage_to_remove = next(filter(lambda current_stage: current_stage.id == stage_id, self.stages), None)
@@ -57,6 +63,7 @@ class Subproject:
 
         self.stages.remove(stage_to_remove)
         self._update_status()
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def update_stage(
         self,
@@ -83,3 +90,4 @@ class Subproject:
             self.name = SubprojectName.create(name)
         if description is not None:
             self.description = SubprojectDescription.create(description)
+        self.updated_at = datetime.now(UTC).replace(tzinfo=None)
