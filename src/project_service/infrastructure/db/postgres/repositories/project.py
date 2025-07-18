@@ -11,8 +11,12 @@ from src.project_service.application.protocols import IProjectReadRepository
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
-from src.project_service.infrastructure.db.postgres.models import ProjectModel, SubprojectModel, StageModel, \
-    MessageModel
+from src.project_service.infrastructure.db.postgres.models import (
+    ProjectModel,
+    SubprojectModel,
+    StageModel,
+    MessageModel,
+)
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
@@ -111,12 +115,7 @@ class ProjectReadRepository:
         return result.scalar()
 
     async def get_stages(self, limit: int, offset: int, **filters) -> list[Stage]:
-        stmt = (
-            select(StageModel)
-            .order_by(desc(StageModel.updated_at))
-            .limit(limit)
-            .offset(offset)
-        )
+        stmt = select(StageModel).order_by(desc(StageModel.updated_at)).limit(limit).offset(offset)
         if subproject_id := filters.get("subproject_id", False):
             stmt = stmt.where(StageModel.subproject_id == subproject_id)
         result = await self.session.execute(stmt)

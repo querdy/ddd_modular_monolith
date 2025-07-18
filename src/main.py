@@ -1,5 +1,7 @@
-from dishka.integrations.litestar import setup_dishka, LitestarProvider
+from dishka.integrations.litestar import setup_dishka as ls_setup_dishka, LitestarProvider
+from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
 from dishka import make_async_container
+from faststream import FastStream
 
 from litestar import Litestar, get, Router
 from litestar.config.cors import CORSConfig
@@ -81,4 +83,6 @@ container = make_async_container(
     MessagingProvider(),
 )
 
-setup_dishka(container, app)
+ls_setup_dishka(container, app)
+
+fs_setup_dishka(container, FastStream(broker))

@@ -1,11 +1,19 @@
+import asyncio
+from asyncio import TaskGroup
+from typing import Sequence
 from uuid import UUID
 
 from dishka import FromDishka
 from loguru import logger
+from pydantic import BaseModel
 
+from src.common.message_bus.interfaces import IMessageBus
+from src.common.message_bus.schemas import Query, GetUserInfoQuery, GetUserInfoResponse
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.infrastructure.read_models.message import MessageRead
+from src.project_service.infrastructure.read_models.stage import StageRead
 
 
 class CreateStageUseCase:
@@ -47,14 +55,43 @@ class DeleteStageUseCase:
 
 
 class ChangeStageStatusUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
-    async def execute(self, stage_id: UUID, status: str, user_id: UUID, message: str | None = None) -> Stage:
+    async def execute(self, stage_id: UUID, status: str, user_id: UUID, message: str | None = None) -> StageRead:
         async with self.uow:
             if message is not None:
                 message = Message.create(user_id, message)
             project = await self.uow.projects.get_by_stage(stage_id)
             new_stage = project.change_stage_status(stage_id, status, message)
             await self.uow.projects.update(project)
-            return new_stage
+
+            author_ids = {msg.author_id for msg in new_stage.messages}
+            user_map: dict[UUID, GetUserInfoResponse] = {}
+            async with TaskGroup() as tg:
+                tasks: Sequence[asyncio.Task] = [
+                    tg.create_task(self.mb.query(GetUserInfoQuery(id=uid), response_model=GetUserInfoResponse))
+                    for uid in author_ids
+                ]
+            for task in tasks:
+                result: GetUserInfoResponse = task.result()
+                user_map[result.id] = result
+            messages = [
+                MessageRead(
+                    id=msg.id,
+                    created_at=msg.created_at,
+                    text=msg.text,
+                    author=user_map[msg.author_id].model_dump()
+                )
+                for msg in new_stage.messages
+            ]
+            return StageRead(
+                id=new_stage.id,
+                name=new_stage.name,
+                description=new_stage.description,
+                created_at=new_stage.created_at,
+                updated_at=new_stage.updated_at,
+                status=new_stage.status,
+                messages=messages,
+            )

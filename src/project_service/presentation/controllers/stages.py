@@ -11,6 +11,7 @@ from litestar.params import Parameter
 from loguru import logger
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.stage import GetStageUseCase, GetStagesUseCase
 from src.project_service.application.use_cases.write.stage import (
@@ -21,6 +22,7 @@ from src.project_service.application.use_cases.write.stage import (
 )
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.enums import StageStatus
+from src.project_service.infrastructure.read_models.stage import StageRead
 from src.project_service.presentation.di.filters import get_stage_filters
 from src.project_service.presentation.dto.stage import (
     StageCreateRequestDTO,
@@ -28,7 +30,7 @@ from src.project_service.presentation.dto.stage import (
     StageResponseDTO,
     StageShortResponseDTO,
     StageUpdateRequestDTO,
-    ChangeStageStatusRequestDTO,
+    ChangeStageStatusRequestDTO, StageReadResponseDTO,
 )
 from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
@@ -98,7 +100,7 @@ class StagesController(Controller):
         use_case = DeleteStageUseCase(uow)
         await use_case.execute(stage_id)
 
-    @patch(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, summary="Обновление статуса этапа")
+    @patch(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, return_dto=StageReadResponseDTO, summary="Обновление статуса этапа")
     @inject
     async def change_status(
         self,
@@ -106,8 +108,9 @@ class StagesController(Controller):
         stage_id: UUID,
         data: DTOData[ChangeStageStatusRequestSchema],
         uow: FromDishka[IProjectServiceUoW],
-    ) -> Stage:
+        mb: FromDishka[IMessageBus],
+    ) -> StageRead:
         data_instance = data.create_instance()
-        use_case = ChangeStageStatusUseCase(uow)
+        use_case = ChangeStageStatusUseCase(uow, mb)
         result = await use_case.execute(stage_id, data_instance.status, UUID(request.auth.sub), data_instance.message)
         return result

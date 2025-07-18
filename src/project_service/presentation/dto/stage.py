@@ -1,6 +1,7 @@
 from litestar.dto import DataclassDTO, DTOConfig
 
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.infrastructure.read_models.stage import StageRead
 from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
     StageUpdateRequestSchema,
@@ -29,3 +30,5 @@ class StageUpdateRequestDTO(DataclassDTO[StageUpdateRequestSchema]):
 
 class ChangeStageStatusRequestDTO(DataclassDTO[ChangeStageStatusRequestSchema]):
     config = DTOConfig(partial=True)
+
+class StageReadResponseDTO(DataclassDTO[StageRead]): ...
