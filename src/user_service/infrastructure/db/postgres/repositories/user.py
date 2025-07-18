@@ -63,6 +63,12 @@ class UserReadRepository:
             raise InfrastructureError(f"Пользователь с ID {user_id} не найден")
         return UserRead.model_validate(orm_user)
 
+    async def get_many(self, user_ids: list[UUID]) -> list[UserRead]:
+        stmt = select(UserModel).where(UserModel.id.in_(user_ids))
+        result = await self.session.execute(stmt)
+        orm_users = result.scalars().all()
+        return [UserRead.model_validate(orm_user) for orm_user in orm_users]
+
     async def get_by_email(self, email: str) -> UserRead:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self.session.execute(stmt)

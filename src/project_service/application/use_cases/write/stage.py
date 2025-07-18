@@ -8,7 +8,8 @@ from loguru import logger
 from pydantic import BaseModel
 
 from src.common.message_bus.interfaces import IMessageBus
-from src.common.message_bus.schemas import Query, GetUserInfoQuery, GetUserInfoResponse
+from src.common.message_bus.schemas import Query, GetUserInfoQuery, GetUserInfoResponse, GetUserInfoListQuery, \
+    GetUserInfoListResponse
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
@@ -69,14 +70,17 @@ class ChangeStageStatusUseCase:
 
             author_ids = {msg.author_id for msg in new_stage.messages}
             user_map: dict[UUID, GetUserInfoResponse] = {}
-            async with TaskGroup() as tg:
-                tasks: Sequence[asyncio.Task] = [
-                    tg.create_task(self.mb.query(GetUserInfoQuery(id=uid), response_model=GetUserInfoResponse))
-                    for uid in author_ids
-                ]
-            for task in tasks:
-                result: GetUserInfoResponse = task.result()
-                user_map[result.id] = result
+            query_result = await self.mb.query(GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse)
+            for user in query_result.users:
+                user_map[user.id] = user
+            # async with TaskGroup() as tg:
+            #     tasks: Sequence[asyncio.Task] = [
+            #         tg.create_task(self.mb.query(GetUserInfoQuery(id=uid), response_model=GetUserInfoResponse))
+            #         for uid in author_ids
+            #     ]
+            # for task in tasks:
+            #     result: GetUserInfoResponse = task.result()
+            #     user_map[result.id] = result
             messages = [
                 MessageRead(
                     id=msg.id,

@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Iterable
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -15,7 +15,13 @@ class Query(BaseModel):
 class GetUserInfoQuery(Query):
     id: UUID
 
+class GetUserInfoListQuery(Query):
+    ids: list[UUID]
+
 
 class GetUserInfoResponse(BaseModel):
     id: UUID
     username: str
+
+class GetUserInfoListResponse(BaseModel):
+    users: list[GetUserInfoResponse]
