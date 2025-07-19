@@ -10,6 +10,7 @@ from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.guards.permission import PermissionGuard
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
 from src.project_service.application.use_cases.write.subproject import (
@@ -40,9 +41,9 @@ class SubProjectsController(Controller):
         path="",
         dto=SubprojectCreateRequestDTO,
         return_dto=SubprojectCreateResponseDTO,
+        guards=[PermissionGuard("subprojects:write")],
         summary="Создание нового подпроекта",
     )
-    @inject
     async def create(
         self,
         data: DTOData[SubprojectCreateRequestSchema],
@@ -57,9 +58,9 @@ class SubProjectsController(Controller):
         path="",
         return_dto=SubprojectShortResponseDTO,
         dependencies={"filters": get_subproject_filters, "pagination": get_limit_offset_filters},
+        guards=[PermissionGuard("subprojects:read")],
         summary="Получение подпроектов",
     )
-    @inject
     async def list(
         self,
         pagination: LimitOffsetFilterRequest,
@@ -70,21 +71,32 @@ class SubProjectsController(Controller):
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
-    @get(path="/{subproject_id: uuid}", return_dto=SubprojectShortResponseDTO, summary="Получение подпроекта по ID")
-    @inject
+    @get(
+        path="/{subproject_id: uuid}",
+        return_dto=SubprojectShortResponseDTO,
+        guards=[PermissionGuard("subprojects:read")],
+        summary="Получение подпроекта по ID",
+    )
     async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Subproject:
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result
 
-    @delete(path="/{subproject_id: uuid}", summary="Удаление проекта")
-    @inject
+    @delete(
+        path="/{subproject_id: uuid}",
+        guards=[PermissionGuard("subprojects:write")],
+        summary="Удаление проекта",
+    )
     async def delete(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
         use_case = DeleteSubprojectUseCase(uow)
         await use_case.execute(subproject_id)
 
-    @patch(path="/{subproject_id: uuid}", dto=SubprojectUpdateRequestDTO, summary="Обновление подпроекта")
-    @inject
+    @patch(
+        path="/{subproject_id: uuid}",
+        dto=SubprojectUpdateRequestDTO,
+        guards=[PermissionGuard("subprojects:write")],
+        summary="Обновление подпроекта",
+    )
     async def update(
         self, subproject_id: UUID, data: DTOData[SubprojectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
     ) -> Subproject:

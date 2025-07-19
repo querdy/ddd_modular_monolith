@@ -2,8 +2,10 @@ from uuid import UUID
 
 from litestar.pagination import OffsetPagination
 
+from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.infrastructure.read_models.stage import StageRead
 from src.project_service.presentation.pagination import StageOffsetPagination
 
 
@@ -19,9 +21,10 @@ class GetStageUseCase:
 
 
 class GetStagesUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
-    async def execute(self, limit: int, offset: int, **filters) -> OffsetPagination[Stage]:
+    async def execute(self, limit: int, offset: int, **filters) -> OffsetPagination[StageRead]:
         async with self.uow:
-            return await StageOffsetPagination(self.uow)(limit, offset, **filters)
+            return await StageOffsetPagination(self.uow, self.mb)(limit, offset, **filters)

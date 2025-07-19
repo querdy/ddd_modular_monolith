@@ -14,7 +14,7 @@ from src.user_service.infrastructure.read_models.role import RoleRead
 class GetOrCreateDefaultRoleUseCase:
     def __init__(self, uow: IUserServiceUoW):
         self.uow = uow
-        self.default_role_name = "Пользователь"
+        self.default_role_name = "Администратор"
 
     async def execute(self) -> Role:
         async with self.uow:

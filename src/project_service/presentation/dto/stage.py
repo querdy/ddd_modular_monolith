@@ -1,4 +1,5 @@
 from litestar.dto import DataclassDTO, DTOConfig
+from litestar.plugins.pydantic import PydanticDTO
 
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.infrastructure.read_models.stage import StageRead
@@ -31,4 +32,5 @@ class StageUpdateRequestDTO(DataclassDTO[StageUpdateRequestSchema]):
 class ChangeStageStatusRequestDTO(DataclassDTO[ChangeStageStatusRequestSchema]):
     config = DTOConfig(partial=True)
 
-class StageReadResponseDTO(DataclassDTO[StageRead]): ...
+
+class StageReadResponseDTO(PydanticDTO[StageRead]): ...

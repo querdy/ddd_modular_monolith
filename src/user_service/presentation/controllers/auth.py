@@ -26,7 +26,6 @@ class AuthController(Controller):
     tags = ["Авторизация"]
 
     @post("/login", dto=LoginRequestDto, exclude_from_auth=True, summary="Авторизация")
-    @inject
     async def login(
         self,
         uow: FromDishka[IUserServiceUoW],
@@ -43,7 +42,6 @@ class AuthController(Controller):
         return response
 
     @get("/refresh", summary="Обновление access и refresh токенов")
-    @inject
     async def refresh_access_token(
         self, request: Request, uow: FromDishka[IUserServiceUoW]
     ) -> Response[TokenResponseSchema]:
@@ -58,7 +56,6 @@ class AuthController(Controller):
         return result
 
     @get("/logout", summary="Выход (удаление refresh token)")
-    @inject
     async def logout(self, request: Request, uow: FromDishka[IUserServiceUoW]) -> Response:
         use_case = LogoutUserUseCase(uow)
         result = await use_case.execute(request.user, request.auth)

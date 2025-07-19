@@ -15,6 +15,7 @@ class Query(BaseModel):
 class GetUserInfoQuery(Query):
     id: UUID
 
+
 class GetUserInfoListQuery(Query):
     ids: list[UUID]
 
@@ -22,6 +23,7 @@ class GetUserInfoListQuery(Query):
 class GetUserInfoResponse(BaseModel):
     id: UUID
     username: str
+
 
 class GetUserInfoListResponse(BaseModel):
     users: list[GetUserInfoResponse]

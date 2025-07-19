@@ -7,6 +7,7 @@ from litestar import Controller, post, get, delete, patch
 from litestar.dto import DTOData
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.guards.permission import PermissionGuard
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
 from src.project_service.application.use_cases.write.project import (
@@ -31,8 +32,13 @@ class ProjectsController(Controller):
     path = "/projects"
     tags = ["Проекты"]
 
-    @post(path="", dto=ProjectCreateRequestDTO, return_dto=ProjectCreateResponseDTO, summary="Создание нового проекта")
-    @inject
+    @post(
+        path="",
+        dto=ProjectCreateRequestDTO,
+        return_dto=ProjectCreateResponseDTO,
+        guards=[PermissionGuard("projects:write")],
+        summary="Создание нового проекта",
+    )
     async def create(self, data: DTOData[ProjectCreateSchema], uow: FromDishka[IProjectServiceUoW]) -> Project:
         data_instance = data.create_instance()
         use_case = CreateProjectUseCase(uow)
@@ -43,9 +49,9 @@ class ProjectsController(Controller):
         path="",
         return_dto=ProjectShortResponseDTO,
         dependencies={"pagination": get_limit_offset_filters},
+        guards=[PermissionGuard("projects:read")],
         summary="Получить проекты",
     )
-    @inject
     async def list(
         self,
         uow: FromDishka[IProjectServiceUoW],
@@ -55,15 +61,22 @@ class ProjectsController(Controller):
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result
 
-    @get(path="/{project_id: uuid}", return_dto=ProjectShortResponseDTO, summary="Получение проекта по ID")
-    @inject
+    @get(
+        path="/{project_id: uuid}",
+        return_dto=ProjectShortResponseDTO,
+        guards=[PermissionGuard("projects:read")],
+        summary="Получение проекта по ID",
+    )
     async def get(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Project:
         use_case = GetProjectUseCase(uow)
         result = await use_case.execute(project_id)
         return result
 
-    @delete(path="/{project_id: uuid}", summary="Удаление проекта")
-    @inject
+    @delete(
+        path="/{project_id: uuid}",
+        guards=[PermissionGuard("projects:write")],
+        summary="Удаление проекта",
+    )
     async def delete(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
         use_case = DeleteProjectUseCase(uow)
         await use_case.execute(project_id)
@@ -72,9 +85,9 @@ class ProjectsController(Controller):
         path="/{project_id: uuid}",
         dto=ProjectUpdateRequestDTO,
         return_dto=ProjectShortResponseDTO,
+        guards=[PermissionGuard("projects:write")],
         summary="Обновление проекта",
     )
-    @inject
     async def patch(
         self, project_id: UUID, data: DTOData[ProjectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
     ) -> Project:

@@ -7,12 +7,19 @@ from dishka import FromDishka
 from loguru import logger
 from pydantic import BaseModel
 
+from src.common.exceptions.application import ApplicationError, ApplicationPermissionDeniedException
 from src.common.message_bus.interfaces import IMessageBus
-from src.common.message_bus.schemas import Query, GetUserInfoQuery, GetUserInfoResponse, GetUserInfoListQuery, \
-    GetUserInfoListResponse
+from src.common.message_bus.schemas import (
+    Query,
+    GetUserInfoQuery,
+    GetUserInfoResponse,
+    GetUserInfoListQuery,
+    GetUserInfoListResponse,
+)
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.domain.value_objects.enums import StageStatus
 from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 
@@ -60,8 +67,14 @@ class ChangeStageStatusUseCase:
         self.uow = uow
         self.mb = mb
 
-    async def execute(self, stage_id: UUID, status: str, user_id: UUID, message: str | None = None) -> StageRead:
+    async def execute(
+        self, stage_id: UUID, status: str, user_id: UUID, permissions: list[str], message: str | None = None
+    ) -> StageRead:
         async with self.uow:
+            if status == "completed" and "stage:change_status_to_completed" not in permissions:
+                raise ApplicationPermissionDeniedException(
+                    f"У вас недостаточно прав для изменения статуса этапа на `{status}`"
+                )
             if message is not None:
                 message = Message.create(user_id, message)
             project = await self.uow.projects.get_by_stage(stage_id)
@@ -70,26 +83,11 @@ class ChangeStageStatusUseCase:
 
             author_ids = {msg.author_id for msg in new_stage.messages}
             user_map: dict[UUID, GetUserInfoResponse] = {}
-            query_result = await self.mb.query(GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse)
+            query_result = await self.mb.query(
+                GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse
+            )
             for user in query_result.users:
                 user_map[user.id] = user
-            # async with TaskGroup() as tg:
-            #     tasks: Sequence[asyncio.Task] = [
-            #         tg.create_task(self.mb.query(GetUserInfoQuery(id=uid), response_model=GetUserInfoResponse))
-            #         for uid in author_ids
-            #     ]
-            # for task in tasks:
-            #     result: GetUserInfoResponse = task.result()
-            #     user_map[result.id] = result
-            messages = [
-                MessageRead(
-                    id=msg.id,
-                    created_at=msg.created_at,
-                    text=msg.text,
-                    author=user_map[msg.author_id].model_dump()
-                )
-                for msg in new_stage.messages
-            ]
             return StageRead(
                 id=new_stage.id,
                 name=new_stage.name,
@@ -97,5 +95,10 @@ class ChangeStageStatusUseCase:
                 created_at=new_stage.created_at,
                 updated_at=new_stage.updated_at,
                 status=new_stage.status,
-                messages=messages,
+                messages=[
+                    MessageRead(
+                        id=msg.id, created_at=msg.created_at, text=msg.text, author=user_map[msg.author_id].model_dump()
+                    )
+                    for msg in new_stage.messages
+                ],
             )

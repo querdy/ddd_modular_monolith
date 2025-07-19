@@ -6,8 +6,12 @@ from dishka.integrations.faststream import inject
 from loguru import logger
 
 from src.common.message_bus.broker import broker
-from src.common.message_bus.schemas import GetUserInfoQuery, GetUserInfoResponse, GetUserInfoListQuery, \
-    GetUserInfoListResponse
+from src.common.message_bus.schemas import (
+    GetUserInfoQuery,
+    GetUserInfoResponse,
+    GetUserInfoListQuery,
+    GetUserInfoListResponse,
+)
 from src.user_service.application.events import UserCreatedEvent
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.queries import GetInfoQuery, GetInfoResponse

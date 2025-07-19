@@ -38,11 +38,15 @@ class Stage:
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def change_status(self, status: str, message: Message | None = None) -> None:
+        if status in (StageStatus.CREATED, StageStatus.IN_PROGRESS):
+            raise DomainError(f"Нельзя вручную установить статус `{status}`")
         if status == StageStatus.CONFIRMED and message is None:
-            raise DomainError(f"Нельзя установить статус {status} без сообщения")
+            raise DomainError(f"Нельзя установить статус `{status}` без сообщения")
         if message is not None:
             if not isinstance(message, Message):
                 raise DomainError(f"Передан некорректный объект сообщения")
             self.messages.append(message)
+        if self.status == status:
+            raise DomainError(f"Новый статус должен отличаться от установленного")
         self.status = StageStatus(status)
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)

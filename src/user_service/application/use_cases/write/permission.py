@@ -26,7 +26,6 @@ class CreateDefaultPermissionsUseCase:
     async def execute(self, permissions: list[Permission]) -> list[Permission]:
         async with self.uow:
             permission_for_return = []
-            logger.info(permissions)
             for permission in permissions:
                 try:
                     new_permission = await self.uow.permissions.get_by_code(permission.code)
@@ -34,5 +33,4 @@ class CreateDefaultPermissionsUseCase:
                 except InfrastructureError:
                     await self.uow.permissions.add(permission)
                     permission_for_return.append(permission)
-            logger.info(permission_for_return)
             return permission_for_return

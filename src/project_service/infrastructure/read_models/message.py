@@ -1,10 +1,10 @@
-from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from pydantic import BaseModel
 
-@dataclass
-class MessageRead:
+
+class MessageRead(BaseModel):
     id: UUID
     created_at: datetime
     author: dict

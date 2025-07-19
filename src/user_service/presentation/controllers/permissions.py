@@ -28,7 +28,6 @@ class PermissionController(Controller):
         dependencies={"filters": get_permissions_filters, "pagination": get_limit_offset_filters},
         summary="Получение списка разрешений",
     )
-    @inject
     async def list(
         self,
         pagination: LimitOffsetFilterRequest,
@@ -39,12 +38,12 @@ class PermissionController(Controller):
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
-    @post(path="", dto=CreatePermissionRequestDTO, summary="Создание нового разрешения")
-    @inject
-    async def create(
-        self, data: DTOData[CreatePermissionRequestSchema], uow: FromDishka[IUserServiceUoW]
-    ) -> Permission:
-        data_instance = data.create_instance()
-        use_case = CreatePermissionUseCase(uow)
-        result = await use_case.execute(data_instance.code, data_instance.description)
-        return result
+    # @post(path="", dto=CreatePermissionRequestDTO, summary="Создание нового разрешения")
+    # @inject
+    # async def create(
+    #     self, data: DTOData[CreatePermissionRequestSchema], uow: FromDishka[IUserServiceUoW]
+    # ) -> Permission:
+    #     data_instance = data.create_instance()
+    #     use_case = CreatePermissionUseCase(uow)
+    #     result = await use_case.execute(data_instance.code, data_instance.description)
+    #     return result

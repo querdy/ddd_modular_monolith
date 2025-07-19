@@ -11,6 +11,7 @@ from litestar.params import Parameter
 from loguru import logger
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.guards.permission import PermissionGuard
 from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.stage import GetStageUseCase, GetStagesUseCase
@@ -30,7 +31,8 @@ from src.project_service.presentation.dto.stage import (
     StageResponseDTO,
     StageShortResponseDTO,
     StageUpdateRequestDTO,
-    ChangeStageStatusRequestDTO, StageReadResponseDTO,
+    ChangeStageStatusRequestDTO,
+    StageReadResponseDTO,
 )
 from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
@@ -45,9 +47,12 @@ class StagesController(Controller):
     tags = ["Этапы"]
 
     @post(
-        path="", dto=StageCreateRequestDTO, return_dto=StageCreateResponseDTO, summary="Добавление этапа к подпроекту"
+        path="",
+        dto=StageCreateRequestDTO,
+        return_dto=StageCreateResponseDTO,
+        guards=[PermissionGuard("stages:write")],
+        summary="Добавление этапа к подпроекту",
     )
-    @inject
     async def create(self, data: DTOData[StageCreateRequestSchema], uow: FromDishka[IProjectServiceUoW]) -> Stage:
         data_instance = data.create_instance()
         use_case = CreateStageUseCase(uow)
@@ -56,23 +61,28 @@ class StagesController(Controller):
 
     @get(
         path="",
-        return_dto=StageResponseDTO,
+        return_dto=StageReadResponseDTO,
         dependencies={"filters": get_stage_filters, "pagination": get_limit_offset_filters},
+        guards=[PermissionGuard("stages:read")],
         summary="Получение этапов",
     )
-    @inject
     async def list(
         self,
         pagination: LimitOffsetFilterRequest,
         filters: FilterStageRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
-    ) -> OffsetPagination[Stage]:
-        use_case = GetStagesUseCase(uow)
+        mb: FromDishka[IMessageBus],
+    ) -> OffsetPagination[StageRead]:
+        use_case = GetStagesUseCase(uow, mb)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
-    @get(path="/{stage_id: uuid}", return_dto=StageResponseDTO, summary="Получение этапа по ID")
-    @inject
+    @get(
+        path="/{stage_id: uuid}",
+        return_dto=StageResponseDTO,
+        guards=[PermissionGuard("stages:read")],
+        summary="Получение этапа по ID",
+    )
     async def get(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Stage:
         use_case = GetStageUseCase(uow)
         result = await use_case.execute(stage_id)
@@ -82,10 +92,10 @@ class StagesController(Controller):
         path="/{stage_id: uuid}",
         dto=StageUpdateRequestDTO,
         return_dto=StageShortResponseDTO,
+        guards=[PermissionGuard("stages:write")],
         summary="Изменение этапа",
         description=f"Статусы: {', '.join(f'"{s.value}"' for s in StageStatus)}",
     )
-    @inject
     async def update(
         self, stage_id: UUID, data: DTOData[StageUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
     ) -> Stage:
@@ -94,14 +104,29 @@ class StagesController(Controller):
         result = await use_case.execute(stage_id, data_instance.name, data_instance.description)
         return result
 
-    @delete(path="/{stage_id: uuid}", summary="Удаление этапа")
-    @inject
+    @delete(
+        path="/{stage_id: uuid}",
+        guards=[PermissionGuard("stages:write")],
+        summary="Удаление этапа",
+    )
     async def delete(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
         use_case = DeleteStageUseCase(uow)
         await use_case.execute(stage_id)
 
-    @patch(path="/{stage_id: uuid}/change_status", dto=ChangeStageStatusRequestDTO, return_dto=StageReadResponseDTO, summary="Обновление статуса этапа")
-    @inject
+    @patch(
+        path="/{stage_id: uuid}/change_status",
+        dto=ChangeStageStatusRequestDTO,
+        return_dto=StageReadResponseDTO,
+        guards=[
+            PermissionGuard(
+                [
+                    "stage:change_status_to_completed",
+                    "stage:change_status_to_confirmed",
+                ]
+            )
+        ],
+        summary="Обновление статуса этапа",
+    )
     async def change_status(
         self,
         request: Request,
@@ -112,5 +137,7 @@ class StagesController(Controller):
     ) -> StageRead:
         data_instance = data.create_instance()
         use_case = ChangeStageStatusUseCase(uow, mb)
-        result = await use_case.execute(stage_id, data_instance.status, UUID(request.auth.sub), data_instance.message)
+        result = await use_case.execute(
+            stage_id, data_instance.status, UUID(request.auth.sub), request.auth.permissions, data_instance.message
+        )
         return result
