@@ -1,4 +1,19 @@
 services:
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Web UI
+    environment:
+      - MINIO_ROOT_USER=admin        # Логин
+      - MINIO_ROOT_PASSWORD=admin123 # Пароль (не короче 8 символов)
+      - MINIO_DEFAULT_BUCKETS=mybucket  # Бакеты, создаются при старте
+    volumes:
+      - minio_data:/bitnami/minio/data
+    command: ["minio", "server", "--console-address", ":9001", "/bitnami/minio/data"]
+    restart: unless-stopped
+
   postgres:
     image: postgres:17
     env_file:
@@ -52,3 +67,4 @@ services:
 volumes:
   postgres:
   rabbitmq_data:
+  minio_data:

@@ -68,8 +68,8 @@ app = Litestar(
     on_shutdown=[broker.close],
     cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),
     openapi_config=OpenAPIConfig(
-        title="Litestar Example",
-        description="Example of litestar",
+        title="IT-M Task Tracker",
+        # description="Example of litestar",
         version="0.0.1",
         components=Components(
             security_schemes={
