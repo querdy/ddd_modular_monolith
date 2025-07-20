@@ -23,7 +23,7 @@ from src.project_service.presentation.controllers.projects import ProjectsContro
 from src.project_service.presentation.controllers.stages import StagesController
 from src.project_service.presentation.controllers.subprojects import SubProjectsController
 from src.user_service.application import IUserServiceUoW
-from src.user_service.application.use_cases.write.permission import CreateDefaultPermissionsUseCase
+from src.user_service.application.use_cases.write.permission import GetOrCreateDefaultPermissionsUseCase
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.domain.default_objects.permissions import default_permissions
 from src.user_service.presentation.controllers.auth import AuthController
@@ -57,7 +57,8 @@ async def create_default_permissions():
     async with container(scope=Scope.REQUEST) as cont:
         uow = await cont.get(IUserServiceUoW)
         async with uow:
-            await CreateDefaultPermissionsUseCase(uow).execute(default_permissions)
+            permissions = await GetOrCreateDefaultPermissionsUseCase(uow).execute(default_permissions)
+
 
 
 app = Litestar(

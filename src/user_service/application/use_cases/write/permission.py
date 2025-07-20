@@ -16,7 +16,7 @@ class CreatePermissionUseCase:
             return new_permission
 
 
-class CreateDefaultPermissionsUseCase:
+class GetOrCreateDefaultPermissionsUseCase:
     def __init__(self, uow: FromDishka[IUserServiceUoW]):
         self.uow = uow
 
