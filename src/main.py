@@ -80,7 +80,7 @@ app = Litestar(
     debug=True,
     route_handlers=[router],
     middleware=[DefineMiddleware(AuthMiddleware)],
-    on_startup=[broker.start, create_default_permissions],
+    on_startup=[broker.start, update_admin_role_permissions],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),
     openapi_config=OpenAPIConfig(
