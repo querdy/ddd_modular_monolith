@@ -20,6 +20,7 @@ from src.project_service.application.use_cases.write.stage import (
     UpdateStageUseCase,
     DeleteStageUseCase,
     ChangeStageStatusUseCase,
+    AddMessageToStageUseCase,
 )
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.enums import StageStatus
@@ -33,12 +34,14 @@ from src.project_service.presentation.dto.stage import (
     StageUpdateRequestDTO,
     ChangeStageStatusRequestDTO,
     StageReadResponseDTO,
+    AddMessageToStageRequestDTO,
 )
 from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
     FilterStageRequestSchema,
     StageUpdateRequestSchema,
     ChangeStageStatusRequestSchema,
+    AddMessageToStageRequestSchema,
 )
 
 
@@ -140,4 +143,22 @@ class StagesController(Controller):
         result = await use_case.execute(
             stage_id, data_instance.status, UUID(request.auth.sub), request.auth.permissions, data_instance.message
         )
+        return result
+
+    @post(
+        path="/{stage_id: uuid}/add_message",
+        dto=AddMessageToStageRequestDTO,
+        summary="Добавить сообщение к этапу",
+    )
+    async def add_message(
+        self,
+        request: Request,
+        stage_id: UUID,
+        data: DTOData[AddMessageToStageRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> StageRead:
+        data_instance = data.create_instance()
+        use_case = AddMessageToStageUseCase(uow, mb)
+        result = await use_case.execute(stage_id, UUID(request.auth.sub), data_instance.message)
         return result

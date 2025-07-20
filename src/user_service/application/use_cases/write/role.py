@@ -15,6 +15,10 @@ class UpdateRoleUseCase:
             if len(permissions) != len(permission_ids):
                 raise ApplicationError(f"Передан некорректный список разрешений")
             role = await self.uow.roles.get(role_id)
-            role.update(name=name, permission_ids=permission_ids)
+            role.update(
+                name=name,
+                permissions=permissions,
+                # permission_ids=permission_ids
+            )
             await self.uow.roles.update(role)
             return role

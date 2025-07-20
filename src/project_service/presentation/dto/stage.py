@@ -7,6 +7,7 @@ from src.project_service.presentation.schemas.stage import (
     StageCreateRequestSchema,
     StageUpdateRequestSchema,
     ChangeStageStatusRequestSchema,
+    AddMessageToStageRequestSchema,
 )
 
 
@@ -31,6 +32,9 @@ class StageUpdateRequestDTO(DataclassDTO[StageUpdateRequestSchema]):
 
 class ChangeStageStatusRequestDTO(DataclassDTO[ChangeStageStatusRequestSchema]):
     config = DTOConfig(partial=True)
+
+
+class AddMessageToStageRequestDTO(DataclassDTO[AddMessageToStageRequestSchema]): ...
 
 
 class StageReadResponseDTO(PydanticDTO[StageRead]): ...

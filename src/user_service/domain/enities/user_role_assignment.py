@@ -3,10 +3,8 @@ from datetime import datetime, UTC
 from typing import Self
 from uuid import UUID, uuid4
 
-from loguru import logger
 
-
-@dataclass
+@dataclass(slots=True)
 class UserRoleAssignment:
     id: UUID
     role_id: UUID

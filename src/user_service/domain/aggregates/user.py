@@ -12,7 +12,7 @@ from src.user_service.domain.value_objects.hashed_password import HashedPassword
 from src.user_service.domain.value_objects.username import Username
 
 
-@dataclass
+@dataclass(slots=True)
 class User:
     id: UUID
     username: Username

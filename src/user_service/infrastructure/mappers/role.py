@@ -1,7 +1,7 @@
 from functools import singledispatch
 
 from src.user_service.domain.aggregates.role import Role
-from src.user_service.domain.aggregates.permission import Permission
+from src.user_service.domain.enities.permission import Permission
 from src.user_service.domain.value_objects.permission_code import PermissionCode
 from src.user_service.domain.value_objects.permission_description import (
     PermissionDescription,
@@ -20,8 +20,14 @@ def role_to_domain(obj):
 
 @role_to_domain.register
 def _(obj: RoleModel) -> Role:
-    permission_ids = [p.id for p in obj.permissions]
-    return Role(id=obj.id, name=RoleName(obj.name), permission_ids=permission_ids)
+    # permission_ids = [p.id for p in obj.permissions]
+    permissions = [p for p in obj.permissions]
+    return Role(
+        id=obj.id,
+        name=RoleName(obj.name),
+        permissions=[permission_to_domain(permission) for permission in permissions],
+        # permission_ids=permission_ids
+    )
 
 
 @singledispatch
@@ -34,7 +40,8 @@ def _(obj: Role) -> RoleModel:
     return RoleModel(
         id=obj.id,
         name=obj.name,
-        permissions=[PermissionModel(id=permission_id) for permission_id in obj.permission_ids],
+        # permissions=[PermissionModel(id=permission_id) for permission_id in obj.permission_ids],
+        permissions=[permission_to_orm(permission) for permission in obj.permissions],
     )
 
 

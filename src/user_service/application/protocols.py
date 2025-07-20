@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.user_service.domain.aggregates.blacklist import BlacklistedToken
-from src.user_service.domain.aggregates.permission import Permission
+from src.user_service.domain.enities.permission import Permission
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.aggregates.user import User
 from src.user_service.infrastructure.read_models.permission import PermissionRead

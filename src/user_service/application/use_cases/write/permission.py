@@ -1,11 +1,8 @@
 from dishka import FromDishka
-from loguru import logger
-from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.application.protocols import IUserServiceUoW
-from src.user_service.domain.aggregates.permission import Permission
-from src.user_service.domain.default_objects.permissions import default_permissions
+from src.user_service.domain.enities.permission import Permission
 
 
 class CreatePermissionUseCase:

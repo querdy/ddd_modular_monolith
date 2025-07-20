@@ -1,21 +1,16 @@
 from dataclasses import asdict
 
 from dishka import FromDishka
-from dishka.integrations.litestar import inject
-from litestar import Controller, get, post
-from litestar.dto import DTOData
+from litestar import Controller, get
 from litestar.pagination import OffsetPagination
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.read.permission import GetPermissionsUseCase
-from src.user_service.application.use_cases.write.permission import CreatePermissionUseCase
-from src.user_service.domain.aggregates.permission import Permission
+from src.user_service.domain.enities.permission import Permission
 from src.user_service.presentation.di.filters import get_permissions_filters
-from src.user_service.presentation.dto.permission import CreatePermissionRequestDTO
 from src.user_service.presentation.schemas.permission import (
     FilterPermissionsRequestSchema,
-    CreatePermissionRequestSchema,
 )
 
 

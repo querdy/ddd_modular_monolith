@@ -26,3 +26,8 @@ class StageUpdateRequestSchema:
 class ChangeStageStatusRequestSchema:
     status: StageStatus
     message: str | None = None
+
+
+@dataclass
+class AddMessageToStageRequestSchema:
+    message: str

@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.exceptions.infrastructure import InfrastructureError
-from src.user_service.domain.aggregates.permission import Permission
+from src.user_service.domain.enities.permission import Permission
 from src.user_service.infrastructure.db.postgres.models import PermissionModel, RoleModel
 from src.user_service.infrastructure.mappers.role import permission_to_orm, permission_to_domain
 from src.user_service.infrastructure.read_models.permission import PermissionRead

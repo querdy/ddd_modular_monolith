@@ -4,7 +4,6 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.project_service.domain.aggregates.project import Project
-from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
 from src.project_service.infrastructure.read_models.stage import StageRead
 

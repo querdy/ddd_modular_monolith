@@ -102,3 +102,39 @@ class ChangeStageStatusUseCase:
                     for msg in new_stage.messages
                 ],
             )
+
+
+class AddMessageToStageUseCase:
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
+        self.uow = uow
+        self.mb = mb
+
+    async def execute(self, stage_id: UUID, user_id: UUID, message: str) -> StageRead:
+        async with self.uow:
+            if message is not None:
+                message = Message.create(user_id, message)
+            project = await self.uow.projects.get_by_stage(stage_id)
+            new_stage = project.add_message_to_stage(stage_id, message)
+            await self.uow.projects.update(project)
+
+            author_ids = {msg.author_id for msg in new_stage.messages}
+            user_map: dict[UUID, GetUserInfoResponse] = {}
+            query_result = await self.mb.query(
+                GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse
+            )
+            for user in query_result.users:
+                user_map[user.id] = user
+            return StageRead(
+                id=new_stage.id,
+                name=new_stage.name,
+                description=new_stage.description,
+                created_at=new_stage.created_at,
+                updated_at=new_stage.updated_at,
+                status=new_stage.status,
+                messages=[
+                    MessageRead(
+                        id=msg.id, created_at=msg.created_at, text=msg.text, author=user_map[msg.author_id].model_dump()
+                    )
+                    for msg in new_stage.messages
+                ],
+            )

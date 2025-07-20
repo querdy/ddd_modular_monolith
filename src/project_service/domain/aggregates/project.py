@@ -108,6 +108,13 @@ class Project:
         self._update_status()
         return stage
 
+    def add_message_to_stage(self, stage_id: UUID, message: Message) -> Stage:
+        subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
+        if subproject_with_stage is None:
+            raise DomainError(f"Подпроект с этапом {stage_id} не найден")
+        stage = subproject_with_stage.add_message_to_stage(stage_id, message)
+        return stage
+
     def remove_stage(self, stage_id: UUID) -> None:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
         subproject_with_stage.remove_stage(stage_id)

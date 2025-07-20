@@ -78,11 +78,18 @@ class Subproject:
         return stage
 
     def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> Stage:
-        stage = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
+        stage: Stage | None = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
         if stage is None:
             raise DomainError(f"Этап с ID {stage_id} не найден")
         stage.change_status(status, message)
         self._update_status()
+        return stage
+
+    def add_message_to_stage(self, stage_id: UUID, message: Message) -> Stage:
+        stage: Stage | None = next(filter(lambda current_stages: current_stages.id == stage_id, self.stages), None)
+        if stage is None:
+            raise DomainError(f"Этап с ID {stage_id} не найден")
+        stage.add_message(message)
         return stage
 
     def update(self, name: str | None = None, description: str | None = None) -> None:

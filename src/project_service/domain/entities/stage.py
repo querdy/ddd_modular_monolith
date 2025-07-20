@@ -50,3 +50,8 @@ class Stage:
             raise DomainError(f"Новый статус должен отличаться от установленного")
         self.status = StageStatus(status)
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)
+
+    def add_message(self, message: Message) -> None:
+        if not isinstance(message, Message):
+            raise DomainError(f"Передан некорректный объект сообщения")
+        self.messages.append(message)

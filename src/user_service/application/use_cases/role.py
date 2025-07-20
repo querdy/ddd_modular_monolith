@@ -25,7 +25,7 @@ class GetOrCreateDefaultRoleUseCase:
             role = Role.create(name=self.default_role_name)
             # await self.uow.roles.add(role)
             for permission in permissions:
-                role.add_permission(permission.id)
+                role.add_permission(permission)
             await self.uow.roles.update(role)
             return role
 
