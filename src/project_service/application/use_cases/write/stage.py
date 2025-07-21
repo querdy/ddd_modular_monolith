@@ -7,7 +7,7 @@ from dishka import FromDishka
 from loguru import logger
 from pydantic import BaseModel
 
-from src.common.exceptions.application import ApplicationError, ApplicationPermissionDeniedException
+from src.common.exceptions.application import ApplicationError, ApplicationPermissionDeniedError
 from src.common.message_bus.interfaces import IMessageBus
 from src.common.message_bus.schemas import (
     Query,
@@ -72,7 +72,7 @@ class ChangeStageStatusUseCase:
     ) -> StageRead:
         async with self.uow:
             if status == "completed" and "stage:change_status_to_completed" not in permissions:
-                raise ApplicationPermissionDeniedException(
+                raise ApplicationPermissionDeniedError(
                     f"У вас недостаточно прав для изменения статуса этапа на `{status}`"
                 )
             if message is not None:

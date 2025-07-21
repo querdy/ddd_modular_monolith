@@ -21,9 +21,10 @@ class GetOrCreateDefaultRoleUseCase:
             role = await self.uow.roles.get_by_name(self.default_role_name)
             if role is None:
                 permissions = await GetOrCreateDefaultPermissionsUseCase(self.uow).execute(default_permissions)
+            else:
+                return role
         async with self.uow:
             role = Role.create(name=self.default_role_name)
-            # await self.uow.roles.add(role)
             for permission in permissions:
                 role.add_permission(permission)
             await self.uow.roles.update(role)

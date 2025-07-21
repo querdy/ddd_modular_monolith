@@ -69,3 +69,12 @@ class User:
         self.role_assignments = [assignment for assignment in self.role_assignments if assignment.role_id != role_id]
         if len(self.role_assignments) == initial_count:
             raise DomainError(f"Роль {role_id} не найдена у пользователя {self.id}")
+
+    def change_password(self, old_password: str, new_password: str, repeat_password: str) -> Self:
+        if not self.hashed_password.verify(old_password):
+            raise DomainError(f"Указан неверный старый пароль")
+        if new_password != repeat_password:
+            raise DomainError(f"Пароли не совпадают")
+        if old_password == new_password:
+            raise DomainError(f"Введены одинаковые старый и новый пароли")
+        self.hashed_password = HashedPassword.create(new_password)

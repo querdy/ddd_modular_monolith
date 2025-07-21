@@ -1,11 +1,13 @@
+from typing import Optional
+
 from dishka.integrations.litestar import setup_dishka as ls_setup_dishka, LitestarProvider, DishkaRouter
 from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
 from dishka import make_async_container, FromDishka, Scope
 from faststream import FastStream
 
-from litestar import Litestar, get, Router
+from litestar import Litestar, get, Router, Response
 from litestar.config.cors import CORSConfig
-from litestar.middleware import DefineMiddleware
+from litestar.middleware import DefineMiddleware, MiddlewareProtocol
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
     SwaggerRenderPlugin,
@@ -15,6 +17,9 @@ from litestar.openapi.plugins import (
     ScalarRenderPlugin,
 )
 from litestar.openapi.spec import Components, SecurityScheme
+from litestar.plugins.prometheus import PrometheusController, PrometheusConfig
+from litestar.types import Receive, Send, ASGIApp
+from prometheus_client import Counter
 
 from src.common.di.message_bus import MessagingProvider
 from src.common.message_bus.broker import broker
@@ -33,11 +38,24 @@ from src.user_service.presentation.controllers.roles import RoleController
 from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
 
+
 container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
     UoWProjectServiceProvider(),
     MessagingProvider(),
+)
+
+prometheus_config = PrometheusConfig()
+
+class CustomPrometheusController(PrometheusController):
+    tags = ["Prometheus"]
+
+metric_router = Router(
+    path="",
+    route_handlers=[
+        CustomPrometheusController,
+    ]
 )
 
 router = DishkaRouter(
@@ -75,11 +93,10 @@ async def update_admin_role_permissions():
             await uow.roles.update(role)
 
 
-
 app = Litestar(
     debug=True,
-    route_handlers=[router],
-    middleware=[DefineMiddleware(AuthMiddleware)],
+    route_handlers=[router, metric_router],
+    middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
     on_startup=[broker.start, update_admin_role_permissions],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),

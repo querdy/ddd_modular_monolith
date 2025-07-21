@@ -7,6 +7,7 @@ from src.user_service.infrastructure.read_models.user import UserRead
 from src.user_service.presentation.schemas.user import (
     CreateUserRequestSchema,
     LoginRequestSchema,
+    ChangePasswordRequestSchema,
 )
 
 
@@ -34,3 +35,6 @@ class UserCreateRequestDto(DataclassDTO[CreateUserRequestSchema]): ...
 
 
 class LoginRequestDto(DataclassDTO[LoginRequestSchema]): ...
+
+
+class ChangePasswordRequestDTO(DataclassDTO[ChangePasswordRequestSchema]): ...

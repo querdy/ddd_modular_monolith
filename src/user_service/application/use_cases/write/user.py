@@ -1,5 +1,8 @@
 from uuid import UUID
 
+from loguru import logger
+
+from src.common.exceptions.application import ApplicationPermissionDeniedError
 from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.exceptions import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
@@ -66,3 +69,18 @@ class UnsignRoleUseCase:
             user = await self.uow.users.update(user)
             await self.uow.session.flush()
             return await self.uow.users_read.get(user.id)
+
+class ChangePasswordUseCase:
+    def __init__(self, uow: IUserServiceUoW):
+        self.uow = uow
+
+    async def execute(self, user_id: UUID, current_user_id: UUID, old_password: str, new_password: str, repeat_password: str) -> None:
+        logger.info(f"{user_id} {current_user_id} {old_password} {new_password} {repeat_password}")
+        async with self.uow:
+            if user_id != current_user_id:
+                raise ApplicationPermissionDeniedError(f"У вас недостаточно прав для изменения пароля другому пользователю")
+            user = await self.uow.users.get(user_id)
+            user.change_password(old_password, new_password, repeat_password)
+            await self.uow.users.update(user)
+
+

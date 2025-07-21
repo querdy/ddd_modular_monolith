@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field, Field
 
 
 @dataclass
@@ -11,8 +11,15 @@ class CreateUserRequestSchema:
 
 @dataclass
 class LoginRequestSchema:
-    email: str
-    password: str
+    email: str = field(default="email@gmail.com")
+    password: str = field(default="")
+
+
+@dataclass
+class ChangePasswordRequestSchema:
+    old_password: str = field(default="")
+    new_password: str = field(default="")
+    repeat_password: str = field(default="")
 
 
 @dataclass

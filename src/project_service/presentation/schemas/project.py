@@ -9,5 +9,5 @@ class ProjectCreateSchema:
 
 @dataclass
 class ProjectUpdateRequestSchema:
-    name: str | None = None
+    name: str
     description: str | None = None

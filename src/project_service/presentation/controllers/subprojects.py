@@ -4,7 +4,7 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, delete, patch
+from litestar import Controller, post, get, delete, patch, put
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.params import Parameter
@@ -91,7 +91,7 @@ class SubProjectsController(Controller):
         use_case = DeleteSubprojectUseCase(uow)
         await use_case.execute(subproject_id)
 
-    @patch(
+    @put(
         path="/{subproject_id: uuid}",
         dto=SubprojectUpdateRequestDTO,
         guards=[PermissionGuard("subprojects:write")],

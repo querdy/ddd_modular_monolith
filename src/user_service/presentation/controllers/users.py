@@ -1,19 +1,21 @@
 import asyncio
-from typing import Callable
+from typing import Callable, Annotated
 from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import get, Controller, Request, post
+from litestar import get, Controller, Request, post, patch
 from litestar.dto import DTOData
+from litestar.enums import RequestEncodingType
 from litestar.openapi.spec import SecurityRequirement, Operation
+from litestar.params import Body
 
 from src.common.message_bus.interfaces import IMessageBus
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.write.user import (
     RegisterUserUseCase,
     AssignRoleUseCase,
-    UnsignRoleUseCase,
+    UnsignRoleUseCase, ChangePasswordUseCase,
 )
 from src.user_service.application.use_cases.read.user import (
     GetUsersUseCase,
@@ -24,12 +26,13 @@ from src.user_service.infrastructure.read_models.user import UserRead
 from src.user_service.presentation.dto.role import AssignRoleRequestDTO, UnsignRoleRequestDTO
 from src.user_service.presentation.schemas.role import AssignRoleRequestSchema, UnsignRoleRequestSchema
 
-from src.user_service.presentation.schemas.user import CreateUserRequestSchema
+from src.user_service.presentation.schemas.user import CreateUserRequestSchema, ChangePasswordRequestSchema
 from src.user_service.presentation.dto.user import (
     UserCreateRequestDto,
     UserCreateResponseDto,
     UserShortResponseDTO,
     UserReadResponseDTO,
+    ChangePasswordRequestDTO,
 )
 from src.common.guards.permission import PermissionGuard
 
@@ -118,9 +121,30 @@ class UserController(Controller):
         summary="Удалить роль у пользователя",
     )
     async def unassign_role(
-        self, user_id: UUID, data: DTOData[UnsignRoleRequestSchema], uow: FromDishka[IUserServiceUoW]
+        self,
+        user_id: UUID,
+        data: DTOData[UnsignRoleRequestSchema],
+        uow: FromDishka[IUserServiceUoW],
     ) -> UserRead:
         data_instance = data.create_instance()
         use_case = UnsignRoleUseCase(uow)
         result = await use_case.execute(user_id, data_instance.role_id)
+        return result
+
+    @patch(path="/{user_id: uuid}/change_password", dto=ChangePasswordRequestDTO, summary="Сменить пароль")
+    async def change_password(
+        self,
+        request: Request,
+        user_id: UUID,
+        data: Annotated[ChangePasswordRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)],
+        uow: FromDishka[IUserServiceUoW],
+    ) -> None:
+        use_case = ChangePasswordUseCase(uow)
+        result = await use_case.execute(
+            user_id,
+            UUID(request.auth.sub),
+            data.old_password,
+            data.new_password,
+            data.repeat_password,
+        )
         return result

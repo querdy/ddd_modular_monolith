@@ -32,6 +32,7 @@ class AuthMiddleware(AbstractAuthenticationMiddleware):
             "/docs/stoplight",
             "/docs/rapid",
             "/docs/scalar",
+            "/metrics",
         ]:
             return AuthenticationResult(user=None, auth=None)
 

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from dishka import FromDishka
 from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, delete, patch
+from litestar import Controller, post, get, delete, patch, put
 from litestar.dto import DTOData
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
@@ -81,15 +81,15 @@ class ProjectsController(Controller):
         use_case = DeleteProjectUseCase(uow)
         await use_case.execute(project_id)
 
-    @patch(
+    @put(
         path="/{project_id: uuid}",
         dto=ProjectUpdateRequestDTO,
         return_dto=ProjectShortResponseDTO,
         guards=[PermissionGuard("projects:write")],
         summary="Обновление проекта",
     )
-    async def patch(
-        self, project_id: UUID, data: DTOData[ProjectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
+    async def update(
+        self, project_id: UUID, data: DTOData[ProjectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW],
     ) -> Project:
         data_instance = data.create_instance()
         use_case = UpdateProjectUseCase(uow)

@@ -38,11 +38,12 @@ class Role:
     #     if permission_id in self.permission_ids:
     #         self.permission_ids.remove(permission_id)
 
-    def update(self,
-               name: str,
-               permissions: list[Permission],
-               # permission_ids: list[UUID]
-               ) -> None:
+    def update(
+        self,
+        name: str,
+        permissions: list[Permission],
+        # permission_ids: list[UUID]
+    ) -> None:
         self.name = RoleName.create(name)
         self.permissions = permissions
         # self.permission_ids = permission_ids

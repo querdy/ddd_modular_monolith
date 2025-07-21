@@ -16,5 +16,5 @@ class FilterSubprojectsRequestSchema:
 
 @dataclass
 class SubprojectUpdateRequestSchema:
-    name: str | None = None
+    name: str
     description: str | None = None

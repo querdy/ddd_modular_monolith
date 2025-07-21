@@ -92,9 +92,8 @@ class Subproject:
         stage.add_message(message)
         return stage
 
-    def update(self, name: str | None = None, description: str | None = None) -> None:
-        if name is not None:
-            self.name = SubprojectName.create(name)
+    def update(self, name: str, description: str | None = None) -> None:
+        self.name = SubprojectName.create(name)
         if description is not None:
             self.description = SubprojectDescription.create(description)
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)

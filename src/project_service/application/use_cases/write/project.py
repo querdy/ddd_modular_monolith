@@ -28,7 +28,7 @@ class UpdateProjectUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, project_id: UUID, name: str, description: str) -> Project:
+    async def execute(self, project_id: UUID, name: str, description: str | None = None) -> Project:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
             project.update(name, description)

@@ -81,9 +81,8 @@ class Project:
     def get_subproject_by_stage_id(self, stage_id: UUID) -> Subproject | None:
         return next(filter(lambda sp: any(stage.id == stage_id for stage in sp.stages), self.subprojects), None)
 
-    def update(self, name: str | None = None, description: str | None = None) -> None:
-        if name is not None:
-            self.name = ProjectName.create(name)
+    def update(self, name: str, description: str | None = None) -> None:
+        self.name = ProjectName.create(name)
         if description is not None:
             self.description = ProjectDescription.create(description)
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)
@@ -124,9 +123,9 @@ class Project:
     def update_subproject(
         self,
         subproject_id: UUID,
-        name: str | None = None,
+        name: str,
         description: str | None = None,
     ) -> Subproject:
-        subproject = next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
+        subproject: Subproject = next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
         subproject.update(name, description)
         return subproject
