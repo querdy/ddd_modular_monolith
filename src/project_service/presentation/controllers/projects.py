@@ -5,6 +5,7 @@ from dishka import FromDishka
 from dishka.integrations.litestar import inject
 from litestar import Controller, post, get, delete, patch, put
 from litestar.dto import DTOData
+from loguru import logger
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.guards.permission import PermissionGuard
@@ -57,6 +58,7 @@ class ProjectsController(Controller):
         uow: FromDishka[IProjectServiceUoW],
         pagination: LimitOffsetFilterRequest,
     ) -> OffsetPagination[Project]:
+        logger.info(f'kekw')
         use_case = GetProjectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result

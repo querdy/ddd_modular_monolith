@@ -1,0 +1,41 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: debug  # Включите для диагностики
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    timeout: 10s
+
+scrape_configs:
+- job_name: litestar
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: litestar
+      service: app
+      __path__: /app/logs/app.log  # Точный путь к файлу
+  pipeline_stages:
+    - json:
+        expressions:
+          timestamp: timestamp
+          level: level
+          module: module
+          function: function
+          line: line
+          message: message
+          logger: logger
+          formatted: formatted
+    - labels:
+        level:
+        logger:
+        module:
+        service:
+    - timestamp:
+        source: timestamp
+        format: RFC3339
+    - output:
+        source: formatted

@@ -1,4 +1,8 @@
-from typing import Optional
+import json
+import logging
+import sys
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 from dishka.integrations.litestar import setup_dishka as ls_setup_dishka, LitestarProvider, DishkaRouter
 from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
@@ -7,6 +11,7 @@ from faststream import FastStream
 
 from litestar import Litestar, get, Router, Response
 from litestar.config.cors import CORSConfig
+from litestar.logging import LoggingConfig
 from litestar.middleware import DefineMiddleware, MiddlewareProtocol
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -19,6 +24,7 @@ from litestar.openapi.plugins import (
 from litestar.openapi.spec import Components, SecurityScheme
 from litestar.plugins.prometheus import PrometheusController, PrometheusConfig
 from litestar.types import Receive, Send, ASGIApp
+from loguru import logger
 from prometheus_client import Counter
 
 from src.common.di.message_bus import MessagingProvider
@@ -39,6 +45,67 @@ from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
 
 
+class LokiJSONFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        timestamp = datetime.utcfromtimestamp(record.created).isoformat() + "Z"
+        formatted = f"[{timestamp}] [{record.levelname}] {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
+
+        log = {
+            "timestamp": timestamp,
+            "level": record.levelname,
+            "logger": record.name,
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
+            "message": record.getMessage(),
+            "formatted": formatted
+        }
+        return json.dumps(log)
+
+class PrettyConsoleFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        timestamp = datetime.utcfromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S")
+        return f"[{timestamp}] [{record.levelname}] {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
+
+def configure_logging() -> LoggingConfig:
+    return LoggingConfig(
+        loggers={
+            "app": {
+                "level": "INFO",
+                "handlers": ["file", "console"],
+                "propagate": False,
+            },
+            "uvicorn": {
+                "level": "INFO",
+                "handlers": ["file", "console"],
+                "propagate": False,
+            },
+        },
+        handlers={
+            "file": {
+                "()": RotatingFileHandler,
+                "filename": "/app/logs/app.log",
+                "maxBytes": 10 * 1024 * 1024,
+                "backupCount": 3,
+                "formatter": "json",
+            },
+            "console": {
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+                "formatter": "console",
+                "level": "INFO",
+            },
+        },
+        formatters={
+            "json": {
+                "()": LokiJSONFormatter,
+            },
+            "console": {
+                "()": PrettyConsoleFormatter,
+            },
+        },
+    )
+
 container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
@@ -48,8 +115,10 @@ container = make_async_container(
 
 prometheus_config = PrometheusConfig()
 
+
 class CustomPrometheusController(PrometheusController):
     tags = ["Prometheus"]
+
 
 metric_router = Router(
     path="",
@@ -96,8 +165,12 @@ async def update_admin_role_permissions():
 app = Litestar(
     debug=True,
     route_handlers=[router, metric_router],
+    logging_config=configure_logging(),
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
-    on_startup=[broker.start, update_admin_role_permissions],
+    on_startup=[
+        broker.start,
+        update_admin_role_permissions
+    ],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),
     openapi_config=OpenAPIConfig(

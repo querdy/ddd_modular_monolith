@@ -49,7 +49,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
+    command: sh -c "mkdir -p /app/logs && chmod 777 /app/logs && alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -62,7 +62,11 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - POSTGRES_HOST=postgres
-
+    logging:
+      driver: "json-file"  # Стандартный драйвер
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   prometheus:
     image: prom/prometheus:latest
@@ -80,6 +84,17 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     ports:
       - "3100:3100"
+
+  promtail:
+      image: grafana/promtail:2.9.4
+      container_name: promtail
+      volumes:
+        - ./logs:/app/logs:ro
+        - ./promtail/promtail-config.yml:/etc/promtail/config.yml
+      command: -config.file=/etc/promtail/config.yml
+      depends_on:
+        - loki
+      restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
