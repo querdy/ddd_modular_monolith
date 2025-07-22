@@ -17,7 +17,12 @@ scrape_configs:
     labels:
       job: litestar
       service: app
-      __path__: /app/logs/app.log  # Точный путь к файлу
+      __path__: /app/logs/app.log
+  - targets: [localhost]
+    labels:
+      job: faststream
+      service: app
+      __path__: /app/logs/fs.log
   pipeline_stages:
     - json:
         expressions:

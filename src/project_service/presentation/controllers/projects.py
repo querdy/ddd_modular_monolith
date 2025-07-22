@@ -58,7 +58,7 @@ class ProjectsController(Controller):
         uow: FromDishka[IProjectServiceUoW],
         pagination: LimitOffsetFilterRequest,
     ) -> OffsetPagination[Project]:
-        logger.info(f'kekw')
+        logger.info(f"kekw")
         use_case = GetProjectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result
@@ -91,7 +91,10 @@ class ProjectsController(Controller):
         summary="Обновление проекта",
     )
     async def update(
-        self, project_id: UUID, data: DTOData[ProjectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW],
+        self,
+        project_id: UUID,
+        data: DTOData[ProjectUpdateRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
     ) -> Project:
         data_instance = data.create_instance()
         use_case = UpdateProjectUseCase(uow)

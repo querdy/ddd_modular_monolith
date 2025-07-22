@@ -15,7 +15,8 @@ from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.write.user import (
     RegisterUserUseCase,
     AssignRoleUseCase,
-    UnsignRoleUseCase, ChangePasswordUseCase,
+    UnsignRoleUseCase,
+    ChangePasswordUseCase,
 )
 from src.user_service.application.use_cases.read.user import (
     GetUsersUseCase,

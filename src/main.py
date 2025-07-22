@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
 from logging.handlers import RotatingFileHandler
 
 from dishka.integrations.litestar import setup_dishka as ls_setup_dishka, LitestarProvider, DishkaRouter
@@ -29,6 +29,7 @@ from prometheus_client import Counter
 
 from src.common.di.message_bus import MessagingProvider
 from src.common.message_bus.broker import broker
+from src.loggers.config import litestar_config
 from src.project_service.di.uow import UoWProjectServiceProvider
 from src.project_service.presentation.controllers.projects import ProjectsController
 from src.project_service.presentation.controllers.stages import StagesController
@@ -44,67 +45,6 @@ from src.user_service.presentation.controllers.roles import RoleController
 from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
 
-
-class LokiJSONFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord) -> str:
-        timestamp = datetime.utcfromtimestamp(record.created).isoformat() + "Z"
-        formatted = f"[{timestamp}] [{record.levelname}] {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
-
-        log = {
-            "timestamp": timestamp,
-            "level": record.levelname,
-            "logger": record.name,
-            "module": record.module,
-            "function": record.funcName,
-            "line": record.lineno,
-            "message": record.getMessage(),
-            "formatted": formatted
-        }
-        return json.dumps(log)
-
-class PrettyConsoleFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord) -> str:
-        timestamp = datetime.utcfromtimestamp(record.created).strftime("%Y-%m-%d %H:%M:%S")
-        return f"[{timestamp}] [{record.levelname}] {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
-
-def configure_logging() -> LoggingConfig:
-    return LoggingConfig(
-        loggers={
-            "app": {
-                "level": "INFO",
-                "handlers": ["file", "console"],
-                "propagate": False,
-            },
-            "uvicorn": {
-                "level": "INFO",
-                "handlers": ["file", "console"],
-                "propagate": False,
-            },
-        },
-        handlers={
-            "file": {
-                "()": RotatingFileHandler,
-                "filename": "/app/logs/app.log",
-                "maxBytes": 10 * 1024 * 1024,
-                "backupCount": 3,
-                "formatter": "json",
-            },
-            "console": {
-                "class": "logging.StreamHandler",
-                "stream": sys.stdout,
-                "formatter": "console",
-                "level": "INFO",
-            },
-        },
-        formatters={
-            "json": {
-                "()": LokiJSONFormatter,
-            },
-            "console": {
-                "()": PrettyConsoleFormatter,
-            },
-        },
-    )
 
 container = make_async_container(
     LitestarProvider(),
@@ -124,7 +64,7 @@ metric_router = Router(
     path="",
     route_handlers=[
         CustomPrometheusController,
-    ]
+    ],
 )
 
 router = DishkaRouter(
@@ -165,12 +105,9 @@ async def update_admin_role_permissions():
 app = Litestar(
     debug=True,
     route_handlers=[router, metric_router],
-    logging_config=configure_logging(),
+    logging_config=litestar_config,
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
-    on_startup=[
-        broker.start,
-        update_admin_role_permissions
-    ],
+    on_startup=[broker.start, update_admin_role_permissions],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),
     openapi_config=OpenAPIConfig(
