@@ -1,17 +1,23 @@
 from uuid import UUID
 
+from loguru import logger
+
+from src.common.message_bus.interfaces import IMessageBus
+from src.project_service.application.events.project import ProjectCreatedEvent
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.aggregates.project import Project
 
 
 class CreateProjectUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, name: str, description: str) -> Project:
         async with self.uow:
             project = Project.create(name=name, description=description)
             await self.uow.projects.add(project)
+            await self.mb.publish(ProjectCreatedEvent.model_validate(project))
             return project
 
 

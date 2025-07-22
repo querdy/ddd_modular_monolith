@@ -10,7 +10,9 @@ class PrettyLitestarConsoleFormatter(logging.Formatter):
         timestamp = dt.strftime("%Y-%m-%d %H:%M:%S") + f".{int(dt.microsecond / 1000):03d}"
         level_color = COLOR_MAP.get(record.levelname, "")
         level_colored = f"{level_color}{record.levelname:<8}{RESET}"
-        return f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
+        return (
+            f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
+        )
 
 
 class PrettyFastStreamConsoleFormatter(logging.Formatter):
@@ -19,4 +21,7 @@ class PrettyFastStreamConsoleFormatter(logging.Formatter):
         timestamp = dt.strftime("%Y-%m-%d %H:%M:%S") + f".{int(dt.microsecond / 1000):03d}"
         level_color = COLOR_MAP.get(record.levelname, "")
         level_colored = f"{level_color}{record.levelname:<8}{RESET}"
-        return f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} | {record.queue} | - {record.getMessage()}"
+        try:
+            return f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} | {record.queue} | - {record.getMessage()}"
+        except AttributeError:
+            return f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"

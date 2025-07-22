@@ -9,6 +9,7 @@ from loguru import logger
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.guards.permission import PermissionGuard
+from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
 from src.project_service.application.use_cases.write.project import (
@@ -40,9 +41,14 @@ class ProjectsController(Controller):
         guards=[PermissionGuard("projects:write")],
         summary="Создание нового проекта",
     )
-    async def create(self, data: DTOData[ProjectCreateSchema], uow: FromDishka[IProjectServiceUoW]) -> Project:
+    async def create(
+        self,
+        data: DTOData[ProjectCreateSchema],
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> Project:
         data_instance = data.create_instance()
-        use_case = CreateProjectUseCase(uow)
+        use_case = CreateProjectUseCase(uow, mb)
         result = await use_case.execute(data_instance.name, data_instance.description)
         return result
 
