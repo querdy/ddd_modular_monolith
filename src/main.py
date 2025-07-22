@@ -1,18 +1,11 @@
-import json
-import logging
-import sys
-from datetime import datetime, UTC
-from logging.handlers import RotatingFileHandler
-
 from dishka.integrations.litestar import setup_dishka as ls_setup_dishka, LitestarProvider, DishkaRouter
 from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
-from dishka import make_async_container, FromDishka, Scope
+from dishka import make_async_container, Scope
 from faststream import FastStream
 
-from litestar import Litestar, get, Router, Response
+from litestar import Litestar, Router
 from litestar.config.cors import CORSConfig
-from litestar.logging import LoggingConfig
-from litestar.middleware import DefineMiddleware, MiddlewareProtocol
+from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
     SwaggerRenderPlugin,
@@ -23,9 +16,6 @@ from litestar.openapi.plugins import (
 )
 from litestar.openapi.spec import Components, SecurityScheme
 from litestar.plugins.prometheus import PrometheusController, PrometheusConfig
-from litestar.types import Receive, Send, ASGIApp
-from loguru import logger
-from prometheus_client import Counter
 
 from src.common.di.message_bus import MessagingProvider
 from src.common.message_bus.broker import broker
