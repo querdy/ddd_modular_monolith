@@ -80,14 +80,6 @@ router = DishkaRouter(
     ],
 )
 
-
-async def create_default_permissions():
-    async with container(scope=Scope.REQUEST) as cont:
-        uow = await cont.get(IUserServiceUoW)
-        async with uow:
-            permissions = await GetOrCreateDefaultPermissionsUseCase(uow).execute(default_permissions)
-
-
 async def update_admin_role_permissions():
     default_role_name = "Администратор"
     async with container(scope=Scope.REQUEST) as cont:
@@ -141,3 +133,7 @@ app = Litestar(
 ls_setup_dishka(container, app)
 
 fs_setup_dishka(container, FastStream(broker))
+
+logger = logging.getLogger("app")
+logger.warning('kekw')
+logger.error('kekw')

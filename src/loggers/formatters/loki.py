@@ -9,9 +9,9 @@ class LokiJSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         timestamp = datetime.fromtimestamp(record.created, UTC).isoformat()
         level_color = COLOR_MAP.get(record.levelname, "")
-        level_colored = f"{level_color}{record.levelname}{RESET}"
+        level_colored = f"{level_color}{record.levelname:<8}{RESET}"
         formatted = (
-            f"{timestamp} | [{level_colored}] | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
+            f"{level_colored} | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
         )
 
         log = {
