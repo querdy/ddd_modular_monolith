@@ -9,6 +9,7 @@ from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject, SubprojectStatus
+from src.project_service.domain.entities.subproject_template import SubprojectTemplate, StageTemplate
 from src.project_service.domain.value_objects.enums import ProjectStatus
 from src.project_service.domain.value_objects.project_description import ProjectDescription
 from src.project_service.domain.value_objects.project_name import ProjectName
@@ -24,6 +25,8 @@ class Project:
     status: ProjectStatus
     subprojects: list[Subproject]
 
+    template: SubprojectTemplate | None = None
+
     @classmethod
     def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
         if subprojects is None:
@@ -36,7 +39,22 @@ class Project:
             updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=ProjectStatus.CREATED,
             subprojects=subprojects,
+            template=None,
         )
+
+    def make_template_from_subproject(self, subproject_id: UUID = UUID("8c9480f4-eefb-427a-8ac8-bb42e5840fbc")):
+        subproject = self.get_subproject_by_id(subproject_id)
+        template = SubprojectTemplate.create(
+            stages=[
+                StageTemplate.create(
+                    name=stage.name,
+                    description=stage.description,
+                )
+                for stage in subproject.stages
+            ]
+        )
+        logger.info(template)
+        self.template = template
 
     def _update_status(self):
         if len(self.subprojects) == 0:

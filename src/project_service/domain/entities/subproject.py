@@ -3,6 +3,8 @@ from datetime import datetime, UTC
 from typing import Self
 from uuid import UUID, uuid4
 
+from loguru import logger
+
 from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage, StageStatus

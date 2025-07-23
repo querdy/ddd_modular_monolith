@@ -16,6 +16,12 @@ class ProjectModel(IdBase):
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    template: Mapped["SubprojectTemplateModel"] = relationship(
+        "SubprojectTemplateModel",
+        back_populates="project",
+        lazy="joined",
+    )
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     subprojects: Mapped[list["SubprojectModel"]] = relationship(
         "SubprojectModel",
@@ -58,7 +64,9 @@ class StageModel(IdBase):
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     end_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     subproject_id: Mapped[UUID] = mapped_column(
-        DBUUID, ForeignKey("subprojects.id", ondelete="CASCADE"), nullable=False
+        DBUUID,
+        ForeignKey("subprojects.id", ondelete="CASCADE"),
+        nullable=False,
     )
 
     subproject: Mapped["SubprojectModel"] = relationship(
@@ -81,10 +89,57 @@ class MessageModel(IdBase):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     author_id: Mapped[UUID] = mapped_column(DBUUID, nullable=False)
     text: Mapped[str] = mapped_column(String(255), nullable=False)
-    stage_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("stages.id", ondelete="CASCADE"), nullable=False)
+    stage_id: Mapped[UUID] = mapped_column(
+        DBUUID,
+        ForeignKey("stages.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     stage: Mapped[StageModel] = relationship(
         "StageModel",
         back_populates="messages",
+        lazy="selectin",
+    )
+
+
+class SubprojectTemplateModel(IdBase):
+    __tablename__ = "subproject_templates"
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    project_id: Mapped[UUID] = mapped_column(
+        DBUUID(as_uuid=True),
+        ForeignKey("projects.id"),
+        unique=True,
+        nullable=False,
+    )
+    project = relationship(
+        "ProjectModel",
+        back_populates="template",
+        lazy="joined",
+    )
+    stages: Mapped[list["StageTemplateModel"]] = relationship(
+        "StageTemplateModel",
+        back_populates="subproject_template",
+        lazy="selectin",
+    )
+
+
+class StageTemplateModel(IdBase):
+    __tablename__ = "stage_templates"
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    subproject_template_id: Mapped[UUID] = mapped_column(
+        DBUUID,
+        ForeignKey("subproject_templates.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
+    )
+    subproject_template: Mapped["SubprojectTemplateModel"] = relationship(
+        "SubprojectTemplateModel",
+        back_populates="stages",
         lazy="selectin",
     )

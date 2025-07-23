@@ -14,6 +14,7 @@ class GetProjectUseCase:
     async def execute(self, project_id: UUID) -> Project:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
+            project.make_template()
             return project
 
 
