@@ -21,6 +21,7 @@ from src.project_service.infrastructure.db.postgres.models import (
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
+from src.project_service.infrastructure.read_models.stage import StageRead
 
 
 class ProjectRepository:
@@ -122,3 +123,12 @@ class ProjectReadRepository:
         result = await self.session.execute(stmt)
         orm_stages = result.unique().scalars().all()
         return [stage_to_domain(stage) for stage in orm_stages]
+
+    async def get_stage(self, stage_id: UUID) -> Stage:
+        stmt = select(StageModel).where(StageModel.id == stage_id)
+        result = await self.session.execute(stmt)
+        try:
+            orm_stage = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Этап с ID {stage_id}, не найден")
+        return stage_to_domain(orm_stage)

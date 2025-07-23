@@ -56,9 +56,14 @@ class StagesController(Controller):
         guards=[PermissionGuard("stages:write")],
         summary="Добавление этапа к подпроекту",
     )
-    async def create(self, data: DTOData[StageCreateRequestSchema], uow: FromDishka[IProjectServiceUoW]) -> Stage:
+    async def create(
+        self,
+        data: DTOData[StageCreateRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> Stage:
         data_instance = data.create_instance()
-        use_case = CreateStageUseCase(uow)
+        use_case = CreateStageUseCase(uow, mb)
         result = await use_case.execute(data_instance.subproject_id, data_instance.name, data_instance.description)
         return result
 
@@ -82,12 +87,17 @@ class StagesController(Controller):
 
     @get(
         path="/{stage_id: uuid}",
-        return_dto=StageResponseDTO,
+        return_dto=StageReadResponseDTO,
         guards=[PermissionGuard("stages:read")],
         summary="Получение этапа по ID",
     )
-    async def get(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Stage:
-        use_case = GetStageUseCase(uow)
+    async def get(
+        self,
+        stage_id: UUID,
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> StageRead:
+        use_case = GetStageUseCase(uow, mb)
         result = await use_case.execute(stage_id)
         return result
 
@@ -100,10 +110,14 @@ class StagesController(Controller):
         description=f"Статусы: {', '.join(f'"{s.value}"' for s in StageStatus)}",
     )
     async def update(
-        self, stage_id: UUID, data: DTOData[StageUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
+        self,
+        stage_id: UUID,
+        data: DTOData[StageUpdateRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
     ) -> Stage:
         data_instance = data.create_instance()
-        use_case = UpdateStageUseCase(uow)
+        use_case = UpdateStageUseCase(uow, mb)
         result = await use_case.execute(stage_id, data_instance.name, data_instance.description)
         return result
 
@@ -112,8 +126,13 @@ class StagesController(Controller):
         guards=[PermissionGuard("stages:write")],
         summary="Удаление этапа",
     )
-    async def delete(self, stage_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
-        use_case = DeleteStageUseCase(uow)
+    async def delete(
+        self,
+        stage_id: UUID,
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> None:
+        use_case = DeleteStageUseCase(uow, mb)
         await use_case.execute(stage_id)
 
     @patch(

@@ -22,8 +22,9 @@ class CreateProjectUseCase:
 
 
 class DeleteProjectUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, project_id: UUID) -> None:
         async with self.uow:
@@ -31,8 +32,9 @@ class DeleteProjectUseCase:
 
 
 class UpdateProjectUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, project_id: UUID, name: str, description: str | None = None) -> Project:
         async with self.uow:
@@ -40,9 +42,11 @@ class UpdateProjectUseCase:
             project.update(name, description)
             return project
 
+
 class CreateTemplateForProjectUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, project_id: UUID, subproject_id: UUID) -> Project:
         async with self.uow:

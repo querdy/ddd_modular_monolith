@@ -25,5 +25,3 @@ class GetProjectsUseCase:
     async def execute(self, limit: int, offset: int) -> OffsetPagination[Project]:
         async with self.uow:
             return await ProjectOffsetPagination(uow=self.uow)(limit, offset)
-            # projects = await self.uow.projects.get_many()
-            # return projects

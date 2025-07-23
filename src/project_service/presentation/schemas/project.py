@@ -13,6 +13,7 @@ class ProjectUpdateRequestSchema:
     name: str
     description: str | None = None
 
+
 @dataclass
 class CreateTemplateRequestSchema:
     subproject_id: UUID

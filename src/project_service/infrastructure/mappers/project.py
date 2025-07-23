@@ -5,8 +5,10 @@ from src.project_service.domain.value_objects.project_description import Project
 from src.project_service.domain.value_objects.project_name import ProjectName
 from src.project_service.infrastructure.db.postgres.models import ProjectModel
 from src.project_service.infrastructure.mappers.subproject import subproject_to_orm, subproject_to_domain
-from src.project_service.infrastructure.mappers.template import subproject_template_to_orm, \
-    subproject_template_to_domain
+from src.project_service.infrastructure.mappers.template import (
+    subproject_template_to_orm,
+    subproject_template_to_domain,
+)
 
 
 @singledispatch

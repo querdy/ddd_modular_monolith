@@ -3,21 +3,43 @@ from uuid import UUID
 from litestar.pagination import OffsetPagination
 
 from src.common.message_bus.interfaces import IMessageBus
+from src.common.message_bus.schemas import GetUserInfoResponse, GetUserInfoListResponse, GetUserInfoListQuery
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.stage import Stage
+from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 from src.project_service.presentation.pagination import StageOffsetPagination
 
 
 class GetStageUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
-    async def execute(self, stage_id: UUID) -> Stage:
+    async def execute(self, stage_id: UUID) -> StageRead:
         async with self.uow:
-            project = await self.uow.projects.get_by_stage(stage_id)
-            stage = project.get_stage_by_id(stage_id)
-            return stage
+            stage: Stage = await self.uow.projects_read.get_stage(stage_id)
+            author_ids = [message.author_id for message in stage.messages]
+            user_map: dict[UUID, GetUserInfoResponse] = {}
+            query_result = await self.mb.query(
+                GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse
+            )
+            for user in query_result.users:
+                user_map[user.id] = user
+            return StageRead(
+                id=stage.id,
+                name=stage.name,
+                description=stage.description,
+                created_at=stage.created_at,
+                updated_at=stage.updated_at,
+                status=stage.status,
+                messages=[
+                    MessageRead(
+                        id=msg.id, created_at=msg.created_at, text=msg.text, author=user_map[msg.author_id].model_dump()
+                    )
+                    for msg in stage.messages
+                ],
+            )
 
 
 class GetStagesUseCase:

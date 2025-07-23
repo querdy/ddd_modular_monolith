@@ -11,6 +11,7 @@ from litestar.params import Parameter
 
 from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.guards.permission import PermissionGuard
+from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase
 from src.project_service.application.use_cases.write.subproject import (
@@ -48,10 +49,13 @@ class SubProjectsController(Controller):
         self,
         data: DTOData[SubprojectCreateRequestSchema],
         uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
     ) -> Subproject:
         data_instance = data.create_instance()
-        use_case = CreateSubprojectUseCase(uow)
-        result = await use_case.execute(data_instance.project_id, data_instance.name, data_instance.description, data_instance.from_template)
+        use_case = CreateSubprojectUseCase(uow, mb)
+        result = await use_case.execute(
+            data_instance.project_id, data_instance.name, data_instance.description, data_instance.from_template
+        )
         return result
 
     @get(
@@ -87,8 +91,13 @@ class SubProjectsController(Controller):
         guards=[PermissionGuard("subprojects:write")],
         summary="Удаление проекта",
     )
-    async def delete(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> None:
-        use_case = DeleteSubprojectUseCase(uow)
+    async def delete(
+        self,
+        subproject_id: UUID,
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
+    ) -> None:
+        use_case = DeleteSubprojectUseCase(uow, mb)
         await use_case.execute(subproject_id)
 
     @put(
@@ -98,9 +107,13 @@ class SubProjectsController(Controller):
         summary="Обновление подпроекта",
     )
     async def update(
-        self, subproject_id: UUID, data: DTOData[SubprojectUpdateRequestSchema], uow: FromDishka[IProjectServiceUoW]
+        self,
+        subproject_id: UUID,
+        data: DTOData[SubprojectUpdateRequestSchema],
+        uow: FromDishka[IProjectServiceUoW],
+        mb: FromDishka[IMessageBus],
     ) -> Subproject:
         data_instance = data.create_instance()
-        use_case = UpdateSubprojectUseCase(uow)
+        use_case = UpdateSubprojectUseCase(uow, mb)
         result = await use_case.execute(subproject_id, data_instance.name, data_instance.description)
         return result

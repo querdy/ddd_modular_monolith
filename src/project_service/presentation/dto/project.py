@@ -1,8 +1,11 @@
 from litestar.dto import DataclassDTO, DTOConfig
 
 from src.project_service.domain.aggregates.project import Project
-from src.project_service.presentation.schemas.project import ProjectCreateSchema, ProjectUpdateRequestSchema, \
-    CreateTemplateRequestSchema
+from src.project_service.presentation.schemas.project import (
+    ProjectCreateSchema,
+    ProjectUpdateRequestSchema,
+    CreateTemplateRequestSchema,
+)
 
 
 class ProjectCreateRequestDTO(DataclassDTO[ProjectCreateSchema]): ...
@@ -17,10 +20,16 @@ class ProjectShortResponseDTO(DataclassDTO[Project]):
 
 
 class ProjectResponseDTO(DataclassDTO[Project]):
-    config = DTOConfig(max_nested_depth=2, exclude={"subprojects", })
+    config = DTOConfig(
+        max_nested_depth=2,
+        exclude={
+            "subprojects",
+        },
+    )
 
 
 class ProjectUpdateRequestDTO(DataclassDTO[ProjectUpdateRequestSchema]):
     config = DTOConfig(partial=True)
+
 
 class CreateTemplateRequestDTO(DataclassDTO[CreateTemplateRequestSchema]): ...

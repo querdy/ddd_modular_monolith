@@ -25,8 +25,9 @@ from src.project_service.infrastructure.read_models.stage import StageRead
 
 
 class CreateStageUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, subproject_id: UUID, name: str, description: str):
         async with self.uow:
@@ -40,8 +41,9 @@ class CreateStageUseCase:
 
 
 class UpdateStageUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, stage_id: UUID, name: str, description: str | None) -> Stage:
         async with self.uow:
@@ -52,8 +54,9 @@ class UpdateStageUseCase:
 
 
 class DeleteStageUseCase:
-    def __init__(self, uow: IProjectServiceUoW):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
         self.uow = uow
+        self.mb = mb
 
     async def execute(self, stage_id: UUID) -> None:
         async with self.uow:
