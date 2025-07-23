@@ -1,6 +1,8 @@
 from uuid import UUID
 
+from src.common.exceptions.application import ApplicationError
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
 
 
@@ -8,11 +10,16 @@ class CreateSubprojectUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, project_id: UUID, name: str, description: str) -> Subproject:
+    async def execute(self, project_id: UUID, name: str, description: str, from_template: bool) -> Subproject:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
 
             subproject = Subproject.create(name=name, description=description)
+            if from_template:
+                if project.template is None:
+                    raise ApplicationError(f"У проекта {project.name}: {project_id} отсутствует шаблон")
+                for stage in project.template.stages:
+                    subproject.add_stage(Stage.create(stage.name, stage.description))
             project.add_subproject(subproject)
             await self.uow.projects.update(project)
             return subproject

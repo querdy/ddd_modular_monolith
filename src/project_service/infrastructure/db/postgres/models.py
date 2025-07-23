@@ -20,6 +20,7 @@ class ProjectModel(IdBase):
     template: Mapped["SubprojectTemplateModel"] = relationship(
         "SubprojectTemplateModel",
         back_populates="project",
+        cascade="all, delete-orphan",
         lazy="joined",
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False)
@@ -108,7 +109,7 @@ class SubprojectTemplateModel(IdBase):
     project_id: Mapped[UUID] = mapped_column(
         DBUUID(as_uuid=True),
         ForeignKey("projects.id"),
-        unique=True,
+        # unique=True,
         nullable=False,
     )
     project = relationship(
@@ -119,6 +120,7 @@ class SubprojectTemplateModel(IdBase):
     stages: Mapped[list["StageTemplateModel"]] = relationship(
         "StageTemplateModel",
         back_populates="subproject_template",
+        cascade="all, delete-orphan",
         lazy="selectin",
     )
 
@@ -132,7 +134,7 @@ class StageTemplateModel(IdBase):
     subproject_template_id: Mapped[UUID] = mapped_column(
         DBUUID,
         ForeignKey("subproject_templates.id", ondelete="CASCADE"),
-        unique=True,
+        # unique=True,
         nullable=False,
     )
     subproject_template: Mapped["SubprojectTemplateModel"] = relationship(

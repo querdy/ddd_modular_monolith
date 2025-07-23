@@ -15,7 +15,7 @@ from src.project_service.application.use_cases.read.project import GetProjectUse
 from src.project_service.application.use_cases.write.project import (
     CreateProjectUseCase,
     DeleteProjectUseCase,
-    UpdateProjectUseCase,
+    UpdateProjectUseCase, CreateTemplateForProjectUseCase,
 )
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.presentation.dto.project import (
@@ -23,9 +23,10 @@ from src.project_service.presentation.dto.project import (
     ProjectCreateResponseDTO,
     ProjectShortResponseDTO,
     ProjectResponseDTO,
-    ProjectUpdateRequestDTO,
+    ProjectUpdateRequestDTO, CreateTemplateRequestDTO,
 )
-from src.project_service.presentation.schemas.project import ProjectCreateSchema, ProjectUpdateRequestSchema
+from src.project_service.presentation.schemas.project import ProjectCreateSchema, ProjectUpdateRequestSchema, \
+    CreateTemplateRequestSchema
 from litestar.pagination import AbstractAsyncClassicPaginator, ClassicPagination, OffsetPagination
 from litestar.params import Parameter
 
@@ -64,20 +65,32 @@ class ProjectsController(Controller):
         uow: FromDishka[IProjectServiceUoW],
         pagination: LimitOffsetFilterRequest,
     ) -> OffsetPagination[Project]:
-        logger.info(f"kekw")
         use_case = GetProjectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result
 
     @get(
         path="/{project_id: uuid}",
-        return_dto=ProjectShortResponseDTO,
+        return_dto=ProjectResponseDTO,
         guards=[PermissionGuard("projects:read")],
         summary="Получение проекта по ID",
     )
     async def get(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Project:
         use_case = GetProjectUseCase(uow)
         result = await use_case.execute(project_id)
+        return result
+
+    @post(
+        path="/{project_id: uuid}/template",
+        dto=CreateTemplateRequestDTO,
+        return_dto=ProjectResponseDTO,
+        guards=[PermissionGuard("projects:write")],
+        summary="Создание шаблона на основе подпроекта",
+    )
+    async def make_template(self, project_id: UUID, data: DTOData[CreateTemplateRequestSchema],  uow: FromDishka[IProjectServiceUoW]) -> Project:
+        data_instance = data.create_instance()
+        use_case = CreateTemplateForProjectUseCase(uow)
+        result = await use_case.execute(project_id, data_instance.subproject_id)
         return result
 
     @delete(

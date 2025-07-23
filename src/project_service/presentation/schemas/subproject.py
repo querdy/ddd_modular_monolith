@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from uuid import UUID
 
 
@@ -6,7 +6,8 @@ from uuid import UUID
 class SubprojectCreateRequestSchema:
     project_id: UUID
     name: str
-    description: str | None = None
+    description: str | None = field(default=None)
+    from_template: bool = field(default=False)
 
 
 @dataclass

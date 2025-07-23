@@ -39,3 +39,14 @@ class UpdateProjectUseCase:
             project = await self.uow.projects.get(project_id)
             project.update(name, description)
             return project
+
+class CreateTemplateForProjectUseCase:
+    def __init__(self, uow: IProjectServiceUoW):
+        self.uow = uow
+
+    async def execute(self, project_id: UUID, subproject_id: UUID) -> Project:
+        async with self.uow:
+            project = await self.uow.projects.get(project_id)
+            project.make_template_from_subproject(subproject_id)
+            await self.uow.projects.update(project)
+            return project

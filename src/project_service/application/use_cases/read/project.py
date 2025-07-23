@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from litestar.pagination import OffsetPagination
+from loguru import logger
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.aggregates.project import Project
@@ -14,7 +15,6 @@ class GetProjectUseCase:
     async def execute(self, project_id: UUID) -> Project:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
-            project.make_template()
             return project
 
 

@@ -5,6 +5,8 @@ from src.project_service.domain.value_objects.project_description import Project
 from src.project_service.domain.value_objects.project_name import ProjectName
 from src.project_service.infrastructure.db.postgres.models import ProjectModel
 from src.project_service.infrastructure.mappers.subproject import subproject_to_orm, subproject_to_domain
+from src.project_service.infrastructure.mappers.template import subproject_template_to_orm, \
+    subproject_template_to_domain
 
 
 @singledispatch
@@ -22,6 +24,7 @@ def _(obj: Project) -> ProjectModel:
         updated_at=obj.updated_at,
         status=obj.status,
         subprojects=[subproject_to_orm(subproject) for subproject in obj.subprojects],
+        template=subproject_template_to_orm(obj.template, obj.id) if obj.template else None,
     )
 
 
@@ -40,4 +43,5 @@ def _(obj: ProjectModel) -> Project:
         updated_at=obj.updated_at,
         status=ProjectStatus(obj.status),
         subprojects=[subproject_to_domain(subproject) for subproject in obj.subprojects],
+        template=subproject_template_to_domain(obj.template) if obj.template else None,
     )

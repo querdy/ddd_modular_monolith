@@ -51,7 +51,7 @@ class SubProjectsController(Controller):
     ) -> Subproject:
         data_instance = data.create_instance()
         use_case = CreateSubprojectUseCase(uow)
-        result = await use_case.execute(data_instance.project_id, data_instance.name, data_instance.description)
+        result = await use_case.execute(data_instance.project_id, data_instance.name, data_instance.description, data_instance.from_template)
         return result
 
     @get(
