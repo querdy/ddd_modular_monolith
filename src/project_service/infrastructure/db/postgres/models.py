@@ -105,9 +105,6 @@ class MessageModel(IdBase):
 class SubprojectTemplateModel(IdBase):
     __tablename__ = "subproject_templates"
 
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-
     project_id: Mapped[UUID] = mapped_column(
         DBUUID(as_uuid=True),
         ForeignKey("projects.id"),
