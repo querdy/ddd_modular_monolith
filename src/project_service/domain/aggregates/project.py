@@ -55,7 +55,6 @@ class Project:
                 for stage in subproject.stages
             ]
         )
-        logger.info(template)
         self.template = template
 
     def _update_status(self):

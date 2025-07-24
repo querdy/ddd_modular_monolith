@@ -44,14 +44,10 @@ class Subproject:
             self.status = SubprojectStatus.CREATED
 
         child_statuses = tuple(stage.status for stage in self.stages)
-        logger.info(child_statuses)
         if len(child_statuses) == 0:
             self.progress = 0
         else:
             self.progress = child_statuses.count(StageStatus.COMPLETED) / len(child_statuses)
-            logger.info(f"{child_statuses.count(StageStatus.COMPLETED)}/{len(child_statuses)}")
-        logger.info(f"progress: {self.progress}")
-
 
         if all(child_status == StageStatus.COMPLETED for child_status in child_statuses):
             self.status = SubprojectStatus.COMPLETED
