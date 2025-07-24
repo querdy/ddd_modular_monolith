@@ -142,8 +142,8 @@ class StagesController(Controller):
         guards=[
             PermissionGuard(
                 [
-                    "stage:change_status_to_completed",
-                    "stage:change_status_to_confirmed",
+                    "stages:change_status_to_completed",
+                    "stages:change_status_to_confirmed",
                 ]
             )
         ],

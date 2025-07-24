@@ -9,8 +9,6 @@ from src.common.exceptions.domain import DomainError
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage, StageStatus
 from src.project_service.domain.value_objects.enums import SubprojectStatus
-from src.project_service.domain.value_objects.stage_description import StageDescription
-from src.project_service.domain.value_objects.stage_name import StageName
 from src.project_service.domain.value_objects.subproject_description import SubprojectDescription
 from src.project_service.domain.value_objects.subproject_name import SubprojectName
 
@@ -23,6 +21,7 @@ class Subproject:
     created_at: datetime
     updated_at: datetime
     status: SubprojectStatus
+    progress: float
     stages: list[Stage]
 
     @classmethod
@@ -36,6 +35,7 @@ class Subproject:
             updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=SubprojectStatus.CREATED,
             description=SubprojectDescription.create(description) if description else None,
+            progress=0,
             stages=stages,
         )
 
@@ -44,10 +44,17 @@ class Subproject:
             self.status = SubprojectStatus.CREATED
 
         child_statuses = tuple(stage.status for stage in self.stages)
+        logger.info(child_statuses)
+        if len(child_statuses) == 0:
+            self.progress = 0
+        else:
+            self.progress = child_statuses.count(StageStatus.COMPLETED) / len(child_statuses)
+            logger.info(f"{child_statuses.count(StageStatus.COMPLETED)}/{len(child_statuses)}")
+        logger.info(f"progress: {self.progress}")
+
 
         if all(child_status == StageStatus.COMPLETED for child_status in child_statuses):
             self.status = SubprojectStatus.COMPLETED
-
         else:
             self.status = SubprojectStatus.IN_PROGRESS
 

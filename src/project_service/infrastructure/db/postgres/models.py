@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime, func
+from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime, func, Float
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 
@@ -24,6 +24,7 @@ class ProjectModel(IdBase):
         lazy="joined",
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False)
+    progress: Mapped[float] = mapped_column(Float, nullable=False)
     subprojects: Mapped[list["SubprojectModel"]] = relationship(
         "SubprojectModel",
         back_populates="project",
@@ -40,6 +41,7 @@ class SubprojectModel(IdBase):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     status: Mapped[str] = mapped_column(String(16), nullable=False)
+    progress: Mapped[float] = mapped_column(Float, nullable=False)
     project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
 
     project: Mapped["ProjectModel"] = relationship(

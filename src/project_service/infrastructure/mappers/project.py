@@ -25,6 +25,7 @@ def _(obj: Project) -> ProjectModel:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=obj.status,
+        progress=obj.progress,
         subprojects=[subproject_to_orm(subproject) for subproject in obj.subprojects],
         template=subproject_template_to_orm(obj.template, obj.id) if obj.template else None,
     )
@@ -44,6 +45,7 @@ def _(obj: ProjectModel) -> Project:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=ProjectStatus(obj.status),
+        progress=obj.progress,
         subprojects=[subproject_to_domain(subproject) for subproject in obj.subprojects],
         template=subproject_template_to_domain(obj.template) if obj.template else None,
     )

@@ -21,6 +21,7 @@ def _(obj: Subproject) -> SubprojectModel:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=obj.status,
+        progress=obj.progress,
         stages=[stage_to_orm(stage) for stage in obj.stages],
     )
 
@@ -39,5 +40,6 @@ def _(obj: SubprojectModel) -> Subproject:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=SubprojectStatus(obj.status),
+        progress=obj.progress,
         stages=[stage_to_domain(stage) for stage in obj.stages],
     )

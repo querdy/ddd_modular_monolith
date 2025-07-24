@@ -74,7 +74,7 @@ class ChangeStageStatusUseCase:
         self, stage_id: UUID, status: str, user_id: UUID, permissions: list[str], message: str | None = None
     ) -> StageRead:
         async with self.uow:
-            if status == "completed" and "stage:change_status_to_completed" not in permissions:
+            if status == "completed" and "stages:change_status_to_completed" not in permissions:
                 raise ApplicationPermissionDeniedError(
                     f"У вас недостаточно прав для изменения статуса этапа на `{status}`"
                 )

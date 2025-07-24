@@ -23,6 +23,7 @@ class Project:
     created_at: datetime
     updated_at: datetime
     status: ProjectStatus
+    progress: float
     subprojects: list[Subproject]
 
     template: SubprojectTemplate | None
@@ -39,6 +40,7 @@ class Project:
             updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=ProjectStatus.CREATED,
             subprojects=subprojects,
+            progress=0,
             template=None,
         )
 
@@ -61,6 +63,11 @@ class Project:
             self.status = ProjectStatus.CREATED
 
         child_statuses = tuple(subproject.status for subproject in self.subprojects)
+
+        if len(child_statuses) == 0:
+            self.progress = 0
+        else:
+            self.progress = child_statuses.count(SubprojectStatus.COMPLETED) / len(child_statuses)
 
         if all(child_status == SubprojectStatus.COMPLETED for child_status in child_statuses):
             self.status = ProjectStatus.COMPLETED
