@@ -23,7 +23,7 @@ from src.project_service.presentation.dto.project import (
     ProjectShortResponseDTO,
     ProjectResponseDTO,
     ProjectUpdateRequestDTO,
-    CreateTemplateRequestDTO, ProjectReadResponseDTO,
+    CreateTemplateRequestDTO, ProjectReadResponseDTO, ProjectReadShortResponseDTO,
 )
 from src.project_service.presentation.schemas.project import (
     ProjectCreateSchema,
@@ -57,7 +57,7 @@ class ProjectsController(Controller):
 
     @get(
         path="",
-        return_dto=ProjectReadResponseDTO,
+        return_dto=ProjectReadShortResponseDTO,
         dependencies={"pagination": get_limit_offset_filters},
         guards=[PermissionGuard("projects:read")],
         summary="Получить проекты",
@@ -73,11 +73,11 @@ class ProjectsController(Controller):
 
     @get(
         path="/{project_id: uuid}",
-        return_dto=ProjectResponseDTO,
+        return_dto=ProjectReadResponseDTO,
         guards=[PermissionGuard("projects:read")],
         summary="Получение проекта по ID",
     )
-    async def get(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Project:
+    async def get(self, project_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> ProjectRead:
         use_case = GetProjectUseCase(uow)
         result = await use_case.execute(project_id)
         return result

@@ -20,7 +20,15 @@ class ProjectCreateResponseDTO(DataclassDTO[Project]):
 class ProjectShortResponseDTO(DataclassDTO[Project]):
     config = DTOConfig(max_nested_depth=0)
 
-class ProjectReadResponseDTO(PydanticDTO[ProjectRead]): ...
+class ProjectReadResponseDTO(PydanticDTO[ProjectRead]):
+    config = DTOConfig(
+        max_nested_depth=3,
+    )
+
+class ProjectReadShortResponseDTO(PydanticDTO[ProjectRead]):
+    config = DTOConfig(
+        max_nested_depth=0,
+    )
 
 class ProjectResponseDTO(DataclassDTO[Project]):
     config = DTOConfig(

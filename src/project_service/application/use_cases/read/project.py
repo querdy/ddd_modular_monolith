@@ -13,9 +13,9 @@ class GetProjectUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, project_id: UUID) -> Project:
+    async def execute(self, project_id: UUID) -> ProjectRead:
         async with self.uow:
-            project = await self.uow.projects.get(project_id)
+            project = await self.uow.projects_read.get_project(project_id)
             return project
 
 

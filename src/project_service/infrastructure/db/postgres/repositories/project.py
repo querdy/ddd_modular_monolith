@@ -137,10 +137,11 @@ class ProjectReadRepository:
             .limit(limit)
             .offset(offset)
             .order_by(desc(SubprojectModel.updated_at))
-            # .options(
+            .options(
+                noload(SubprojectModel.stages),
             #     selectinload(SubprojectModel.stages)
             #     .selectinload(StageModel.messages)
-            # )
+            )
         )
         if project_id := filters.get("project_id", False):
             stmt = stmt.where(SubprojectModel.project_id == project_id)
@@ -192,7 +193,15 @@ class ProjectReadRepository:
             .limit(limit)
             .offset(offset)
             .order_by(desc(ProjectModel.created_at))
+            .options(
+                joinedload(ProjectModel.template),
+                noload(ProjectModel.subprojects)
+            )
+            # .join(SubprojectModel, SubprojectModel.project_id == ProjectModel.id)
+            # .join(StageModel, StageModel.subproject_id == SubprojectModel.id)
+            # .join(MessageModel, MessageModel.stage_id == StageModel.id)
             # .options(
+            #     joinedload(ProjectModel.template),
             #     selectinload(ProjectModel.subprojects)
             #     .selectinload(SubprojectModel.stages)
             #     .selectinload(StageModel.messages)
@@ -201,3 +210,22 @@ class ProjectReadRepository:
         result = await self.session.execute(stmt)
         orm_projects = result.scalars().all()
         return [ProjectRead.model_validate(orm_project) for orm_project in orm_projects]
+
+    async def get_project(self, project_id: UUID) -> ProjectRead:
+        stmt = (
+            select(ProjectModel)
+            .where(ProjectModel.id == project_id)
+            .order_by(desc(ProjectModel.created_at))
+            .options(
+                # selectinload(ProjectModel.subprojects),
+                joinedload(ProjectModel.template),
+                noload(ProjectModel.subprojects)
+                # selectinload(ProjectModel.subprojects).noload(SubprojectModel.stages)
+            )
+        )
+        result = await self.session.execute(stmt)
+        try:
+            orm_project = result.scalar_one()
+        except NoResultFound:
+            raise InfrastructureError(f"Проект с ID {project_id} не найден")
+        return ProjectRead.model_validate(orm_project)

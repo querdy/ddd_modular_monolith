@@ -99,12 +99,12 @@ async def create_test_data():
         async with uow:
             pr = await uow.projects_read.get_projects(limit=1, offset=0)
             if not pr:
-                for idx in range(20):
+                for idx in range(50):
                     project = Project.create(name=f"Проект-{idx}")
-                    for jdx in range(50):
+                    for jdx in range(100):
                         subproject = Subproject.create(name=f"Подпроект-{jdx}")
                         project.add_subproject(subproject)
-                        for kdx in range(20):
+                        for kdx in range(50):
                             stage = Stage.create(name=f"stage-{kdx}")
                             subproject.add_stage(stage)
                     await uow.projects.add(project)

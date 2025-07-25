@@ -1,7 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+from src.project_service.domain.entities.subproject_template import SubprojectTemplate
+from src.project_service.infrastructure.read_models.subproject import SubprojectRead
+from src.project_service.infrastructure.read_models.template import SubprojectTemplateRead
 
 
 class ProjectRead(BaseModel):
@@ -12,5 +16,7 @@ class ProjectRead(BaseModel):
     updated_at: datetime
     status: str
     progress: float
+    # subprojects: list[SubprojectRead]
+    template: SubprojectTemplateRead | None
 
     model_config = ConfigDict(from_attributes=True)
