@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, UTC
-from typing import Self
+from typing import Self, Optional
 from uuid import UUID, uuid4
 
 from loguru import logger
@@ -26,7 +26,7 @@ class Project:
     progress: float
     subprojects: list[Subproject]
 
-    template: SubprojectTemplate | None
+    template: SubprojectTemplate | None = None
 
     @classmethod
     def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
