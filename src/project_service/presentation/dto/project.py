@@ -1,6 +1,8 @@
 from litestar.dto import DataclassDTO, DTOConfig
+from litestar.plugins.pydantic import PydanticDTO
 
 from src.project_service.domain.aggregates.project import Project
+from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.presentation.schemas.project import (
     ProjectCreateSchema,
     ProjectUpdateRequestSchema,
@@ -18,6 +20,7 @@ class ProjectCreateResponseDTO(DataclassDTO[Project]):
 class ProjectShortResponseDTO(DataclassDTO[Project]):
     config = DTOConfig(max_nested_depth=0)
 
+class ProjectReadResponseDTO(PydanticDTO[ProjectRead]): ...
 
 class ProjectResponseDTO(DataclassDTO[Project]):
     config = DTOConfig(

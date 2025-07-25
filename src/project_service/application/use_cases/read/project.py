@@ -5,6 +5,7 @@ from loguru import logger
 
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.aggregates.project import Project
+from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.presentation.pagination import ProjectOffsetPagination
 
 
@@ -22,6 +23,6 @@ class GetProjectsUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, limit: int, offset: int) -> OffsetPagination[Project]:
+    async def execute(self, limit: int, offset: int) -> OffsetPagination[ProjectRead]:
         async with self.uow:
             return await ProjectOffsetPagination(uow=self.uow)(limit, offset)

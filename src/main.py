@@ -97,14 +97,14 @@ async def create_test_data():
                 await uow.users.add(User.create(username="kekw", email="kekw@gmail.com", password="string123", repeat_password="string123", role_assignment=UserRoleAssignment.create(role_id=role.id)))
         uow = await cont.get(IProjectServiceUoW)
         async with uow:
-            pr = await uow.projects.get_many(limit=1, offset=0)
+            pr = await uow.projects_read.get_projects(limit=1, offset=0)
             if not pr:
-                for idx in range(50):
+                for idx in range(20):
                     project = Project.create(name=f"Проект-{idx}")
-                    for jdx in range(150):
+                    for jdx in range(50):
                         subproject = Subproject.create(name=f"Подпроект-{jdx}")
                         project.add_subproject(subproject)
-                        for kdx in range(50):
+                        for kdx in range(20):
                             stage = Stage.create(name=f"stage-{kdx}")
                             subproject.add_stage(stage)
                     await uow.projects.add(project)

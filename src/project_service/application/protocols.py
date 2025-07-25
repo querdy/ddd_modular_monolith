@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
+from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 
 
@@ -28,6 +29,8 @@ class IProjectReadRepository:
     async def get_stages(self, limit: int, offset: int, **filters) -> list[Stage]: ...
 
     async def get_stage(self, stage_id: UUID) -> Stage: ...
+
+    async def get_projects(self, limit: int, offset: int, **filters) -> list[ProjectRead]: ...
 
 
 class IProjectServiceUoW(Protocol):

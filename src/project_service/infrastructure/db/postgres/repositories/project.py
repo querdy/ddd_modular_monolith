@@ -4,7 +4,7 @@ from loguru import logger
 from sqlalchemy import select, func, delete, desc, asc
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, noload, selectinload, joinedload
 
 from src.common.exceptions.domain import DomainError
 from src.common.exceptions.infrastructure import InfrastructureError
@@ -21,7 +21,9 @@ from src.project_service.infrastructure.db.postgres.models import (
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
+from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.infrastructure.read_models.stage import StageRead
+from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 
 
 class ProjectRepository:
@@ -38,7 +40,16 @@ class ProjectRepository:
         self.session.add(orm_project)
 
     async def get(self, project_id: UUID) -> Project:
-        stmt = select(ProjectModel).where(ProjectModel.id == project_id)
+        stmt = (
+            select(ProjectModel)
+            .where(ProjectModel.id == project_id)
+            .options(
+                joinedload(ProjectModel.template),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.messages)
+            )
+        )
         result = await self.session.execute(stmt)
         try:
             orm_project = result.scalar_one()
@@ -47,7 +58,11 @@ class ProjectRepository:
         return project_to_domain(orm_project)
 
     async def get_many(self, limit: int, offset: int) -> list[Project]:
-        stmt = select(ProjectModel).limit(limit).offset(offset).order_by(desc(ProjectModel.created_at))
+        stmt = select(ProjectModel).limit(limit).offset(offset).order_by(desc(ProjectModel.created_at)).options(
+            selectinload(ProjectModel.subprojects)
+            .selectinload(SubprojectModel.stages)
+            .selectinload(StageModel.messages)
+        )
         result = await self.session.execute(stmt)
         orm_projects = result.scalars().all()
         return [project_to_domain(orm_project) for orm_project in orm_projects]
@@ -58,7 +73,15 @@ class ProjectRepository:
         return project_to_domain(new_project)
 
     async def get_by_subproject(self, subproject_id: UUID) -> Project:
-        stmt = select(ProjectModel).join(SubprojectModel).where(SubprojectModel.id == subproject_id)
+        stmt = (select(ProjectModel)
+        .join(SubprojectModel, SubprojectModel.project_id == ProjectModel.id)
+        .where(SubprojectModel.id == subproject_id)
+        .options(
+            joinedload(ProjectModel.template),
+            selectinload(ProjectModel.subprojects)
+            .selectinload(SubprojectModel.stages)
+            .selectinload(StageModel.messages)
+        ))
         result = await self.session.execute(stmt)
         try:
             orm_project = result.scalar_one()
@@ -72,10 +95,16 @@ class ProjectRepository:
             .join(SubprojectModel, SubprojectModel.project_id == ProjectModel.id)
             .join(StageModel, StageModel.subproject_id == SubprojectModel.id)
             .where(StageModel.id == stage_id)
+            .options(
+                joinedload(ProjectModel.template),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.messages)
+            )
         )
         result = await self.session.execute(stmt)
         try:
-            orm_project = result.scalar_one()
+            orm_project = result.unique().scalar_one()
         except NoResultFound:
             raise InfrastructureError(f"Проект, содержащий этап с ID {stage_id}, не найден")
 
@@ -92,7 +121,8 @@ class ProjectReadRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_subproject_by_id(self, subproject_id: UUID) -> Subproject: ...
+    async def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
+        ...
 
     async def subprojects_count(self, **filters) -> int:
         stmt = select(func.count()).select_from(SubprojectModel)
@@ -101,13 +131,22 @@ class ProjectReadRepository:
         result = await self.session.execute(stmt)
         return result.scalar()
 
-    async def get_subprojects(self, limit: int, offset: int, **filters) -> list[Subproject]:
-        stmt = select(SubprojectModel).limit(limit).offset(offset).order_by(desc(SubprojectModel.updated_at))
+    async def get_subprojects(self, limit: int, offset: int, **filters) -> list[SubprojectRead]:
+        stmt = (
+            select(SubprojectModel)
+            .limit(limit)
+            .offset(offset)
+            .order_by(desc(SubprojectModel.updated_at))
+            # .options(
+            #     selectinload(SubprojectModel.stages)
+            #     .selectinload(StageModel.messages)
+            # )
+        )
         if project_id := filters.get("project_id", False):
             stmt = stmt.where(SubprojectModel.project_id == project_id)
         result = await self.session.execute(stmt)
         orm_subprojects = result.scalars().all()
-        return [subproject_to_domain(subproject) for subproject in orm_subprojects]
+        return [SubprojectRead.model_validate(subproject) for subproject in orm_subprojects]
 
     async def stages_count(self, **filters) -> int:
         stmt = select(func.count()).select_from(StageModel)
@@ -117,7 +156,15 @@ class ProjectReadRepository:
         return result.scalar()
 
     async def get_stages(self, limit: int, offset: int, **filters) -> list[Stage]:
-        stmt = select(StageModel).order_by(desc(StageModel.updated_at)).limit(limit).offset(offset)
+        stmt = (
+            select(StageModel)
+            .order_by(desc(StageModel.updated_at))
+            .limit(limit)
+            .offset(offset)
+            .options(
+                selectinload(StageModel.messages)
+            )
+        )
         if subproject_id := filters.get("subproject_id", False):
             stmt = stmt.where(StageModel.subproject_id == subproject_id)
         result = await self.session.execute(stmt)
@@ -125,10 +172,32 @@ class ProjectReadRepository:
         return [stage_to_domain(stage) for stage in orm_stages]
 
     async def get_stage(self, stage_id: UUID) -> Stage:
-        stmt = select(StageModel).where(StageModel.id == stage_id)
+        stmt = (
+            select(StageModel)
+            .where(StageModel.id == stage_id)
+            .options(
+                selectinload(StageModel.messages)
+            )
+        )
         result = await self.session.execute(stmt)
         try:
             orm_stage = result.scalar_one()
         except NoResultFound:
             raise InfrastructureError(f"Этап с ID {stage_id}, не найден")
         return stage_to_domain(orm_stage)
+
+    async def get_projects(self, limit: int, offset: int, **filters) -> list[ProjectRead]:
+        stmt = (
+            select(ProjectModel)
+            .limit(limit)
+            .offset(offset)
+            .order_by(desc(ProjectModel.created_at))
+            # .options(
+            #     selectinload(ProjectModel.subprojects)
+            #     .selectinload(SubprojectModel.stages)
+            #     .selectinload(StageModel.messages)
+            # )
+        )
+        result = await self.session.execute(stmt)
+        orm_projects = result.scalars().all()
+        return [ProjectRead.model_validate(orm_project) for orm_project in orm_projects]

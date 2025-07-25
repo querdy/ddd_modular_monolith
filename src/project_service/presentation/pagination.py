@@ -19,7 +19,7 @@ class ProjectOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
         return await self.uow.projects.count()
 
     async def get_items(self, limit: int, offset: int, **filters) -> list[T]:
-        return await self.uow.projects.get_many(limit, offset)
+        return await self.uow.projects_read.get_projects(limit, offset)
 
 
 class SubprojectOffsetPagination(FilteredAbstractAsyncOffsetPaginator):

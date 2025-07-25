@@ -16,13 +16,14 @@ from src.project_service.application.use_cases.write.project import (
     CreateTemplateForProjectUseCase,
 )
 from src.project_service.domain.aggregates.project import Project
+from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.presentation.dto.project import (
     ProjectCreateRequestDTO,
     ProjectCreateResponseDTO,
     ProjectShortResponseDTO,
     ProjectResponseDTO,
     ProjectUpdateRequestDTO,
-    CreateTemplateRequestDTO,
+    CreateTemplateRequestDTO, ProjectReadResponseDTO,
 )
 from src.project_service.presentation.schemas.project import (
     ProjectCreateSchema,
@@ -56,7 +57,7 @@ class ProjectsController(Controller):
 
     @get(
         path="",
-        return_dto=ProjectShortResponseDTO,
+        return_dto=ProjectReadResponseDTO,
         dependencies={"pagination": get_limit_offset_filters},
         guards=[PermissionGuard("projects:read")],
         summary="Получить проекты",
@@ -64,9 +65,8 @@ class ProjectsController(Controller):
     async def list(
         self,
         uow: FromDishka[IProjectServiceUoW],
-        mb: FromDishka[IMessageBus],
         pagination: LimitOffsetFilterRequest,
-    ) -> OffsetPagination[Project]:
+    ) -> OffsetPagination[ProjectRead]:
         use_case = GetProjectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset)
         return result
