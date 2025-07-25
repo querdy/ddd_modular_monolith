@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime, UTC
 
-from src.loggers.formatters.colors import COLOR_MAP, RESET
+from src.common.loggers.formatters.colors import COLOR_MAP, RESET
 
 
 class LokiJSONFormatter(logging.Formatter):

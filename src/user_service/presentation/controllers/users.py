@@ -1,13 +1,10 @@
-import asyncio
-from typing import Callable, Annotated
+from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
-from dishka.integrations.litestar import inject
 from litestar import get, Controller, Request, post, patch
 from litestar.dto import DTOData
 from litestar.enums import RequestEncodingType
-from litestar.openapi.spec import SecurityRequirement, Operation
 from litestar.params import Body
 
 from src.common.message_bus.interfaces import IMessageBus
@@ -35,7 +32,7 @@ from src.user_service.presentation.dto.user import (
     UserReadResponseDTO,
     ChangePasswordRequestDTO,
 )
-from src.common.guards.permission import PermissionGuard
+from src.common.litestar_.guards.permission import PermissionGuard
 
 
 class UserController(Controller):

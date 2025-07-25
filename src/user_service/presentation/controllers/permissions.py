@@ -4,7 +4,7 @@ from dishka import FromDishka
 from litestar import Controller, get
 from litestar.pagination import OffsetPagination
 
-from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.read.permission import GetPermissionsUseCase
 from src.user_service.domain.enities.permission import Permission

@@ -1,11 +1,10 @@
 from uuid import UUID
 
 from dishka import FromDishka
-from dishka.integrations.litestar import inject
 from litestar import Controller, get, post, put
 from litestar.dto import DTOData
 
-from src.common.guards.permission import PermissionGuard
+from src.common.litestar_.guards.permission import PermissionGuard
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.role import GetRolesUseCase, GetRoleByIdUseCase, CreateRoleUseCase
 from src.user_service.application.use_cases.write.role import UpdateRoleUseCase

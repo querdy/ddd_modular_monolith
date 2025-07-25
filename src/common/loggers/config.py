@@ -5,8 +5,9 @@ from logging.handlers import RotatingFileHandler
 from litestar.logging import LoggingConfig
 from loguru import logger
 
-from src.loggers.formatters.console import PrettyLitestarConsoleFormatter, PrettyFastStreamConsoleFormatter
-from src.loggers.formatters.loki import LokiJSONFormatter
+from src.common.loggers.filters import ExcludeMetricsFilter
+from src.common.loggers.formatters.console import PrettyLitestarConsoleFormatter, PrettyFastStreamConsoleFormatter
+from src.common.loggers.formatters.loki import LokiJSONFormatter
 
 litestar_config = LoggingConfig(
     loggers={
@@ -34,6 +35,7 @@ litestar_config = LoggingConfig(
             "stream": sys.stdout,
             "formatter": "console",
             "level": "INFO",
+            "filters": ["exclude_metrics"],
         },
     },
     formatters={
@@ -43,6 +45,11 @@ litestar_config = LoggingConfig(
         "console": {
             "()": PrettyLitestarConsoleFormatter,
         },
+    },
+    filters={
+        "exclude_metrics": {
+            "()": ExcludeMetricsFilter,
+        }
     },
 )
 

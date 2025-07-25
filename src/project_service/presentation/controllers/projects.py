@@ -1,14 +1,11 @@
-from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
-from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, delete, patch, put
+from litestar import Controller, post, get, delete, put
 from litestar.dto import DTOData
-from loguru import logger
 
-from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
-from src.common.guards.permission import PermissionGuard
+from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.litestar_.guards.permission import PermissionGuard
 from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
@@ -32,8 +29,7 @@ from src.project_service.presentation.schemas.project import (
     ProjectUpdateRequestSchema,
     CreateTemplateRequestSchema,
 )
-from litestar.pagination import AbstractAsyncClassicPaginator, ClassicPagination, OffsetPagination
-from litestar.params import Parameter
+from litestar.pagination import OffsetPagination
 
 
 class ProjectsController(Controller):

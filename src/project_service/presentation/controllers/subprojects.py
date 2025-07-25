@@ -1,16 +1,13 @@
 from dataclasses import asdict
-from typing import Annotated
 from uuid import UUID
 
 from dishka import FromDishka
-from dishka.integrations.litestar import inject
-from litestar import Controller, post, get, delete, patch, put
+from litestar import Controller, post, get, delete, put
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
-from litestar.params import Parameter
 
-from src.common.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
-from src.common.guards.permission import PermissionGuard
+from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
+from src.common.litestar_.guards.permission import PermissionGuard
 from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.application.use_cases.read.subproject import GetSubprojectUseCase, GetSubprojectsUseCase

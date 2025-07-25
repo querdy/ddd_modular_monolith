@@ -3,9 +3,8 @@ from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
 from dishka import make_async_container, Scope
 from faststream import FastStream
 
-from litestar import Litestar, Router, Request, Response, MediaType, status_codes
+from litestar import Litestar, Router
 from litestar.config.cors import CORSConfig
-from litestar.exceptions import HTTPException
 from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -16,15 +15,14 @@ from litestar.openapi.plugins import (
     ScalarRenderPlugin,
 )
 from litestar.openapi.spec import Components, SecurityScheme
-from litestar.plugins.prometheus import PrometheusController, PrometheusConfig
-from loguru import logger
-from rich import status
 
-from src.common.di.message_bus import MessagingProvider
+from src.common.litestar_.di.message_bus import MessagingProvider
 from src.common.exceptions.application import ApplicationError
 from src.common.exceptions.infrastructure import InfrastructureError
+from src.common.litestar_.exception_handlers import log_exception
+from src.common.litestar_.monitoring.prometheus import CustomPrometheusController, prometheus_config
 from src.common.message_bus.broker import broker
-from src.loggers.config import litestar_config
+from src.common.loggers.config import litestar_config
 from src.project_service.di.uow import UoWProjectServiceProvider
 from src.project_service.presentation.controllers.projects import ProjectsController
 from src.project_service.presentation.controllers.stages import StagesController
@@ -47,13 +45,6 @@ container = make_async_container(
     UoWProjectServiceProvider(),
     MessagingProvider(),
 )
-
-prometheus_config = PrometheusConfig()
-
-
-class CustomPrometheusController(PrometheusController):
-    tags = ["Prometheus"]
-
 
 metric_router = Router(
     path="",
@@ -89,13 +80,6 @@ async def update_admin_role_permissions():
                 role.add_permission(permission)
             await uow.roles.update(role)
 
-def log_exception(_: Request, exc: Exception) -> Response:
-    logger.info(f"{type(exc).__name__}: {exc}")
-    return Response(
-        media_type=MediaType.JSON,
-        content={"status_code": status_codes.HTTP_400_BAD_REQUEST, "detail": str(exc)},
-        status_code=status_codes.HTTP_400_BAD_REQUEST,
-    )
 
 app = Litestar(
     debug=True,
@@ -105,10 +89,7 @@ app = Litestar(
     on_startup=[broker.start, update_admin_role_permissions],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(
-        allow_origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3001"
-        ],
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3001"],
         allow_methods=["*"],
         allow_headers=["*"],
         allow_credentials=True,

@@ -1,7 +1,7 @@
 import logging
 from datetime import UTC, datetime
 
-from src.loggers.formatters.colors import COLOR_MAP, RESET
+from src.common.loggers.formatters.colors import COLOR_MAP, RESET
 
 
 class PrettyLitestarConsoleFormatter(logging.Formatter):

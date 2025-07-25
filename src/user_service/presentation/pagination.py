@@ -1,4 +1,4 @@
-from src.common.pagination import FilteredAbstractAsyncOffsetPaginator
+from src.common.litestar_.pagination import FilteredAbstractAsyncOffsetPaginator
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.infrastructure.read_models.role import PermissionRead
 
