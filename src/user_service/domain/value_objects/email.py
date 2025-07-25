@@ -1,7 +1,7 @@
 import re
 from typing import Self
 
-from src.user_service.domain.exceptions import DomainError
+from src.common.exceptions.domain import DomainError
 
 
 class Email(str):

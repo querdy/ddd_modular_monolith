@@ -3,7 +3,7 @@ from uuid import UUID
 from litestar.dto import DTOData
 from loguru import logger
 
-from src.user_service.application.exceptions import ApplicationError
+from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.write.permission import GetOrCreateDefaultPermissionsUseCase
 from src.user_service.domain.aggregates.role import Role

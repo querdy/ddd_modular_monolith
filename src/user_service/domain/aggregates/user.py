@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from loguru import logger
 
 from src.user_service.domain.enities.user_role_assignment import UserRoleAssignment
-from src.user_service.domain.exceptions import DomainError
+from src.common.exceptions.domain import DomainError
 from src.user_service.domain.value_objects.email import Email
 from src.user_service.domain.value_objects.hashed_password import HashedPassword
 from src.user_service.domain.value_objects.username import Username

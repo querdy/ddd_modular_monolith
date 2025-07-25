@@ -1,6 +1,6 @@
 from typing import Self
 
-from src.user_service.domain.exceptions import DomainError
+from src.common.exceptions.domain import DomainError
 from src.user_service.domain.protocols.hasher import PasswordHasherProtocol
 from src.user_service.domain.services.hasher import Argon2PasswordHasher
 

@@ -3,8 +3,9 @@ from dishka.integrations.faststream import setup_dishka as fs_setup_dishka
 from dishka import make_async_container, Scope
 from faststream import FastStream
 
-from litestar import Litestar, Router
+from litestar import Litestar, Router, Request, Response, MediaType, status_codes
 from litestar.config.cors import CORSConfig
+from litestar.exceptions import HTTPException
 from litestar.middleware import DefineMiddleware
 from litestar.openapi import OpenAPIConfig
 from litestar.openapi.plugins import (
@@ -16,8 +17,11 @@ from litestar.openapi.plugins import (
 )
 from litestar.openapi.spec import Components, SecurityScheme
 from litestar.plugins.prometheus import PrometheusController, PrometheusConfig
+from loguru import logger
+from rich import status
 
 from src.common.di.message_bus import MessagingProvider
+from src.common.exceptions.application import ApplicationError
 from src.common.message_bus.broker import broker
 from src.loggers.config import litestar_config
 from src.project_service.di.uow import UoWProjectServiceProvider
@@ -29,12 +33,12 @@ from src.user_service.application.use_cases.write.permission import GetOrCreateD
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.domain.aggregates.role import Role
 from src.user_service.domain.default_objects.permissions import default_permissions
+from src.common.exceptions.domain import DomainError
 from src.user_service.presentation.controllers.auth import AuthController
 from src.user_service.presentation.controllers.permissions import PermissionController
 from src.user_service.presentation.controllers.roles import RoleController
 from src.user_service.presentation.controllers.users import UserController
 from src.user_service.presentation.middlewares.auth import AuthMiddleware
-
 
 container = make_async_container(
     LitestarProvider(),
@@ -84,6 +88,13 @@ async def update_admin_role_permissions():
                 role.add_permission(permission)
             await uow.roles.update(role)
 
+def log_exception(_: Request, exc: Exception) -> Response:
+    logger.info(f"{type(exc).__name__}: {exc}")
+    return Response(
+        media_type=MediaType.JSON,
+        content={"status_code": status_codes.HTTP_400_BAD_REQUEST, "detail": str(exc)},
+        status_code=status_codes.HTTP_400_BAD_REQUEST,
+    )
 
 app = Litestar(
     debug=True,
@@ -101,9 +112,12 @@ app = Litestar(
         allow_headers=["*"],
         allow_credentials=True,
     ),
+    exception_handlers={
+        DomainError: log_exception,
+        ApplicationError: log_exception,
+    },
     openapi_config=OpenAPIConfig(
         title="IT-M Task Tracker",
-        # description="Example of litestar",
         version="0.0.1",
         components=Components(
             security_schemes={

@@ -3,7 +3,7 @@ from uuid import UUID
 from litestar import Response, status_codes
 from litestar.exceptions import HTTPException
 
-from src.user_service.application.exceptions import ApplicationError
+from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.config import settings
 from src.user_service.domain.aggregates.blacklist import BlacklistedToken

@@ -4,13 +4,13 @@ from loguru import logger
 
 from src.common.exceptions.application import ApplicationPermissionDeniedError
 from src.common.message_bus.interfaces import IMessageBus
-from src.user_service.application.exceptions import ApplicationError
+from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.events import UserCreatedEvent
 from src.user_service.application.use_cases.role import GetOrCreateDefaultRoleUseCase
 from src.user_service.domain.aggregates.user import User
 from src.user_service.domain.enities.user_role_assignment import UserRoleAssignment
-from src.user_service.infrastructure.exceptions import InfrastructureError
+from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.infrastructure.read_models.user import UserRead
 
 

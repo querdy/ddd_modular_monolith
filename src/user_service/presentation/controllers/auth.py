@@ -7,7 +7,7 @@ from litestar.enums import RequestEncodingType
 from litestar.exceptions import HTTPException
 from litestar.params import Body
 
-from src.user_service.application.exceptions import ApplicationError
+from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.auth import (
     LoginUserUseCase,
