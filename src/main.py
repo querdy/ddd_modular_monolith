@@ -92,7 +92,15 @@ app = Litestar(
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
     on_startup=[broker.start, update_admin_role_permissions],
     on_shutdown=[broker.close],
-    cors_config=CORSConfig(allow_origins=["*"], allow_credentials=True),
+    cors_config=CORSConfig(
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3001"
+        ],
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_credentials=True,
+    ),
     openapi_config=OpenAPIConfig(
         title="IT-M Task Tracker",
         # description="Example of litestar",
