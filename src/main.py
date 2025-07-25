@@ -22,6 +22,7 @@ from rich import status
 
 from src.common.di.message_bus import MessagingProvider
 from src.common.exceptions.application import ApplicationError
+from src.common.exceptions.infrastructure import InfrastructureError
 from src.common.message_bus.broker import broker
 from src.loggers.config import litestar_config
 from src.project_service.di.uow import UoWProjectServiceProvider
@@ -115,6 +116,7 @@ app = Litestar(
     exception_handlers={
         DomainError: log_exception,
         ApplicationError: log_exception,
+        InfrastructureError: log_exception,
     },
     openapi_config=OpenAPIConfig(
         title="IT-M Task Tracker",

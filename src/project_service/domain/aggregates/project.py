@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, UTC
 from typing import Self, Optional
 from uuid import UUID, uuid4
@@ -26,7 +26,7 @@ class Project:
     progress: float
     subprojects: list[Subproject]
 
-    template: SubprojectTemplate | None = None
+    template: SubprojectTemplate | None = field(default=None)
 
     @classmethod
     def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
@@ -46,6 +46,8 @@ class Project:
 
     def make_template_from_subproject(self, subproject_id: UUID):
         subproject = self.get_subproject_by_id(subproject_id)
+        if subproject is None:
+            raise DomainError(f"Подпроект с id `{subproject_id}` не найден")
         template = SubprojectTemplate.create(
             stages=[
                 StageTemplate.create(
