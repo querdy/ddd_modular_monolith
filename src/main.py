@@ -15,6 +15,7 @@ from litestar.openapi.plugins import (
     ScalarRenderPlugin,
 )
 from litestar.openapi.spec import Components, SecurityScheme
+from loguru import logger
 
 from src.common.litestar_.di.message_bus import MessagingProvider
 from src.common.exceptions.application import ApplicationError
@@ -23,7 +24,11 @@ from src.common.litestar_.exception_handlers import log_exception
 from src.common.litestar_.monitoring.prometheus import CustomPrometheusController, prometheus_config
 from src.common.message_bus.broker import broker
 from src.common.loggers.config import litestar_config
+from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.di.uow import UoWProjectServiceProvider
+from src.project_service.domain.aggregates.project import Project
+from src.project_service.domain.entities.stage import Stage
+from src.project_service.domain.entities.subproject import Subproject
 from src.project_service.presentation.controllers.projects import ProjectsController
 from src.project_service.presentation.controllers.stages import StagesController
 from src.project_service.presentation.controllers.subprojects import SubProjectsController
@@ -31,8 +36,10 @@ from src.user_service.application import IUserServiceUoW
 from src.user_service.application.use_cases.write.permission import GetOrCreateDefaultPermissionsUseCase
 from src.user_service.di.uow import UoWUserServiceProvider
 from src.user_service.domain.aggregates.role import Role
+from src.user_service.domain.aggregates.user import User
 from src.user_service.domain.default_objects.permissions import default_permissions
 from src.common.exceptions.domain import DomainError
+from src.user_service.domain.enities.user_role_assignment import UserRoleAssignment
 from src.user_service.presentation.controllers.auth import AuthController
 from src.user_service.presentation.controllers.permissions import PermissionController
 from src.user_service.presentation.controllers.roles import RoleController
@@ -66,9 +73,9 @@ router = DishkaRouter(
     ],
 )
 
+default_role_name = "Администратор"
 
 async def update_admin_role_permissions():
-    default_role_name = "Администратор"
     async with container(scope=Scope.REQUEST) as cont:
         uow = await cont.get(IUserServiceUoW)
         async with uow:
@@ -80,13 +87,34 @@ async def update_admin_role_permissions():
                 role.add_permission(permission)
             await uow.roles.update(role)
 
+async def create_test_data():
+    async with container(scope=Scope.REQUEST) as cont:
+        uow = await cont.get(IUserServiceUoW)
+        async with uow:
+            role = await uow.roles.get_by_name(default_role_name)
+            us = await uow.users.get_all()
+            if not us:
+                await uow.users.add(User.create(username="kekw", email="kekw@gmail.com", password="string123", repeat_password="string123", role_assignment=UserRoleAssignment.create(role_id=role.id)))
+        uow = await cont.get(IProjectServiceUoW)
+        async with uow:
+            pr = await uow.projects.get_many(limit=1, offset=0)
+            if not pr:
+                for idx in range(50):
+                    project = Project.create(name=f"Проект-{idx}")
+                    for jdx in range(150):
+                        subproject = Subproject.create(name=f"Подпроект-{jdx}")
+                        project.add_subproject(subproject)
+                        for kdx in range(50):
+                            stage = Stage.create(name=f"stage-{kdx}")
+                            subproject.add_stage(stage)
+                    await uow.projects.add(project)
 
 app = Litestar(
     debug=True,
     route_handlers=[router, metric_router],
     logging_config=litestar_config,
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
-    on_startup=[broker.start, update_admin_role_permissions],
+    on_startup=[broker.start, update_admin_role_permissions, create_test_data],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(
         allow_origins=["http://localhost:3000", "http://127.0.0.1:3001"],
