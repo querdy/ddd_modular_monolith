@@ -14,4 +14,8 @@ class StageTemplate:
 
     @classmethod
     def create(cls, name: str, description: str | None = None) -> Self:
-        return cls(id=uuid4(), name=StageName(name), description=StageDescription(description))
+        return cls(
+            id=uuid4(),
+            name=StageName(name),
+            description=StageDescription(description) if description else None,
+        )

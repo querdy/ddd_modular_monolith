@@ -13,8 +13,7 @@ class GetSubprojectUseCase:
 
     async def execute(self, subproject_id: UUID) -> Subproject:
         async with self.uow:
-            project = await self.uow.projects.get_by_subproject(subproject_id)
-            subproject = project.get_subproject_by_id(subproject_id)
+            subproject = await self.uow.projects_read.get_subproject(subproject_id)
             return subproject
 
 

@@ -11,7 +11,7 @@ from src.user_service.config import settings
 class UoWProjectServiceProvider(Provider):
     @provide(scope=Scope.APP)
     def get_sessionmaker(self) -> async_sessionmaker:
-        engine = create_async_engine(settings.DB_STRING, echo=True, future=True)
+        engine = create_async_engine(settings.DB_STRING, echo=False, future=True)
         return async_sessionmaker(
             autocommit=False,
             autoflush=False,

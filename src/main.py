@@ -75,6 +75,7 @@ router = DishkaRouter(
 
 default_role_name = "Администратор"
 
+
 async def update_admin_role_permissions():
     async with container(scope=Scope.REQUEST) as cont:
         uow = await cont.get(IUserServiceUoW)
@@ -87,6 +88,7 @@ async def update_admin_role_permissions():
                 role.add_permission(permission)
             await uow.roles.update(role)
 
+
 async def create_test_data():
     async with container(scope=Scope.REQUEST) as cont:
         uow = await cont.get(IUserServiceUoW)
@@ -94,7 +96,15 @@ async def create_test_data():
             role = await uow.roles.get_by_name(default_role_name)
             us = await uow.users.get_all()
             if not us:
-                await uow.users.add(User.create(username="kekw", email="kekw@gmail.com", password="string123", repeat_password="string123", role_assignment=UserRoleAssignment.create(role_id=role.id)))
+                await uow.users.add(
+                    User.create(
+                        username="kekw",
+                        email="kekw@gmail.com",
+                        password="string123",
+                        repeat_password="string123",
+                        role_assignment=UserRoleAssignment.create(role_id=role.id),
+                    )
+                )
         uow = await cont.get(IProjectServiceUoW)
         async with uow:
             pr = await uow.projects_read.get_projects(limit=1, offset=0)
@@ -108,6 +118,7 @@ async def create_test_data():
                             stage = Stage.create(name=f"stage-{kdx}")
                             subproject.add_stage(stage)
                     await uow.projects.add(project)
+
 
 app = Litestar(
     debug=True,

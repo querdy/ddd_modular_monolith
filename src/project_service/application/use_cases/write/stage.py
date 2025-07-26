@@ -71,7 +71,7 @@ class ChangeStageStatusUseCase:
         self.mb = mb
 
     async def execute(
-            self, stage_id: UUID, status: str, user_id: UUID, permissions: list[str], message: str | None = None
+        self, stage_id: UUID, status: str, user_id: UUID, permissions: list[str], message: str | None = None
     ) -> StageRead:
         async with self.uow:
             if status == "completed" and "stages:change_status_to_completed" not in permissions:
@@ -100,10 +100,7 @@ class ChangeStageStatusUseCase:
                 status=new_stage.status,
                 messages=[
                     MessageRead(
-                        id=msg.id,
-                        created_at=msg.created_at,
-                        text=msg.text,
-                        author=user_map[msg.author_id].model_dump()
+                        id=msg.id, created_at=msg.created_at, text=msg.text, author=user_map[msg.author_id].model_dump()
                     )
                     for msg in new_stage.messages
                 ],
@@ -139,8 +136,10 @@ class AddMessageToStageUseCase:
                 status=new_stage.status,
                 messages=[
                     MessageRead(
-                        id=msg.id, created_at=msg.created_at, text=msg.text,
-                        author=user_map.get(msg.author_id, None).model_dump()
+                        id=msg.id,
+                        created_at=msg.created_at,
+                        text=msg.text,
+                        author=user_map.get(msg.author_id, None).model_dump(),
                     )
                     for msg in new_stage.messages
                 ],

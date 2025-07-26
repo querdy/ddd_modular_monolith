@@ -35,7 +35,10 @@ class GetStageUseCase:
                 status=stage.status,
                 messages=[
                     MessageRead(
-                        id=msg.id, created_at=msg.created_at, text=msg.text, author=user_map.get(msg.author_id, None).model_dump()
+                        id=msg.id,
+                        created_at=msg.created_at,
+                        text=msg.text,
+                        author=user_map.get(msg.author_id, None).model_dump(),
                     )
                     for msg in stage.messages
                 ],

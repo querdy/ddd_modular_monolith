@@ -13,7 +13,7 @@ class GetProjectUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, project_id: UUID) -> ProjectRead:
+    async def execute(self, project_id: UUID) -> Project:
         async with self.uow:
             project = await self.uow.projects_read.get_project(project_id)
             return project
@@ -23,6 +23,6 @@ class GetProjectsUseCase:
     def __init__(self, uow: IProjectServiceUoW):
         self.uow = uow
 
-    async def execute(self, limit: int, offset: int) -> OffsetPagination[ProjectRead]:
+    async def execute(self, limit: int, offset: int) -> OffsetPagination[Project]:
         async with self.uow:
             return await ProjectOffsetPagination(uow=self.uow)(limit, offset)

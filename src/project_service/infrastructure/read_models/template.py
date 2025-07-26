@@ -7,6 +7,7 @@ class StageTemplateRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class SubprojectTemplateRead(BaseModel):
     stages: list[StageTemplateRead]
 

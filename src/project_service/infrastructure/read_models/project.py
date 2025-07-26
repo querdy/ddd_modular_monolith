@@ -3,8 +3,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.project_service.domain.entities.subproject_template import SubprojectTemplate
-from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 from src.project_service.infrastructure.read_models.template import SubprojectTemplateRead
 
 

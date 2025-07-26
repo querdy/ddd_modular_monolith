@@ -6,7 +6,8 @@ from litestar.logging import LoggingConfig
 from loguru import logger
 
 from src.common.loggers.filters import ExcludeMetricsFilter
-from src.common.loggers.formatters.console import PrettyLitestarConsoleFormatter, PrettyFastStreamConsoleFormatter
+from src.common.loggers.formatters.console import PrettyLitestarConsoleFormatter, PrettyFastStreamConsoleFormatter, \
+    PrettySQLAlchemyConsoleFormatter
 from src.common.loggers.formatters.loki import LokiJSONFormatter
 
 litestar_config = LoggingConfig(
@@ -53,7 +54,7 @@ litestar_config = LoggingConfig(
     },
 )
 
-faststream_config = {
+log_config = {
     "version": 1,
     "disable_existing_loggers": False,
     "loggers": {
@@ -62,11 +63,11 @@ faststream_config = {
             "level": "INFO",
             "propagate": False,
         },
-        # "aiormq": {
-        #     "handlers": ["console", "file"],
-        #     "level": "INFO",
-        #     "propagate": False
-        # }
+        "sqlalchemy.engine": {
+            "handlers": ["sqlalchemy_console"],
+            "level": "INFO",
+            "propagate": False,
+        }
     },
     "handlers": {
         "file": {
@@ -83,6 +84,12 @@ faststream_config = {
             "formatter": "console",
             "level": "INFO",
         },
+        "sqlalchemy_console": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "sqlalchemy",
+            "level": "INFO",
+        }
     },
     "formatters": {
         "json": {
@@ -91,10 +98,13 @@ faststream_config = {
         "console": {
             "()": PrettyFastStreamConsoleFormatter,
         },
+        "sqlalchemy": {
+            "()": PrettySQLAlchemyConsoleFormatter
+        }
     },
 }
 
-logging.config.dictConfig(faststream_config)
+logging.config.dictConfig(log_config)
 
 logger.remove()
 logger.add(
