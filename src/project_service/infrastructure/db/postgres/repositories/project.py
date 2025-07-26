@@ -146,7 +146,7 @@ class ProjectReadRepository:
             .order_by(desc(SubprojectModel.updated_at))
             .options(
                 noload(SubprojectModel.stages),
-                noload(SubprojectModel.project)
+                noload(SubprojectModel.project),
                 #     selectinload(SubprojectModel.stages)
                 #     .selectinload(StageModel.messages)
             )
@@ -161,10 +161,7 @@ class ProjectReadRepository:
         stmt = (
             select(SubprojectModel)
             .where(SubprojectModel.id == subproject_id)
-            .options(
-                noload(SubprojectModel.stages),
-                noload(SubprojectModel.project)
-            )
+            .options(noload(SubprojectModel.stages), noload(SubprojectModel.project))
         )
         result = await self.session.execute(stmt)
         try:
@@ -172,7 +169,6 @@ class ProjectReadRepository:
         except NoResultFound:
             raise InfrastructureError(f"Подпроект с ID {subproject_id} не найден")
         return subproject_to_domain(orm_subproject)
-
 
     async def stages_count(self, **filters) -> int:
         stmt = select(func.count()).select_from(StageModel)

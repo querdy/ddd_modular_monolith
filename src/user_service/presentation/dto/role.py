@@ -11,7 +11,7 @@ from src.user_service.presentation.schemas.role import (
 )
 
 
-class RoleWithPermissionsResponseDTO(PydanticDTO[RoleRead]):
+class RoleWithPermissionsResponseDTO(DataclassDTO[Role]):
     config = DTOConfig(max_nested_depth=1)
 
 

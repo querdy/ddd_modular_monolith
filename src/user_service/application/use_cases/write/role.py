@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from loguru import logger
+
 from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.domain.aggregates.role import Role
@@ -18,7 +20,6 @@ class UpdateRoleUseCase:
             role.update(
                 name=name,
                 permissions=permissions,
-                # permission_ids=permission_ids
             )
             await self.uow.roles.update(role)
             return role

@@ -47,7 +47,7 @@ class GetRolesUseCase:
 
     async def execute(self) -> list[Role]:
         async with self.uow:
-            roles = await self.uow.roles.get_all()
+            roles = await self.uow.roles.get_many()
             return roles
 
 
@@ -55,9 +55,9 @@ class GetRoleByIdUseCase:
     def __init__(self, uow: IUserServiceUoW):
         self.uow = uow
 
-    async def execute(self, role_id: UUID) -> RoleRead:
+    async def execute(self, role_id: UUID) -> Role:
         async with self.uow:
-            role = await self.uow.roles_read.get(role_id)
+            role = await self.uow.roles.get(role_id)
             return role
 
 

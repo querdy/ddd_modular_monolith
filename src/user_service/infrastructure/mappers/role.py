@@ -40,7 +40,6 @@ def _(obj: Role) -> RoleModel:
     return RoleModel(
         id=obj.id,
         name=obj.name,
-        # permissions=[PermissionModel(id=permission_id) for permission_id in obj.permission_ids],
         permissions=[permission_to_orm(permission) for permission in obj.permissions],
     )
 

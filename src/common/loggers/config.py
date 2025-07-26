@@ -6,8 +6,11 @@ from litestar.logging import LoggingConfig
 from loguru import logger
 
 from src.common.loggers.filters import ExcludeMetricsFilter
-from src.common.loggers.formatters.console import PrettyLitestarConsoleFormatter, PrettyFastStreamConsoleFormatter, \
-    PrettySQLAlchemyConsoleFormatter
+from src.common.loggers.formatters.console import (
+    PrettyLitestarConsoleFormatter,
+    PrettyFastStreamConsoleFormatter,
+    PrettySQLAlchemyConsoleFormatter,
+)
 from src.common.loggers.formatters.loki import LokiJSONFormatter
 
 litestar_config = LoggingConfig(
@@ -67,7 +70,7 @@ log_config = {
             "handlers": ["sqlalchemy_console"],
             "level": "INFO",
             "propagate": False,
-        }
+        },
     },
     "handlers": {
         "file": {
@@ -89,7 +92,7 @@ log_config = {
             "stream": sys.stdout,
             "formatter": "sqlalchemy",
             "level": "INFO",
-        }
+        },
     },
     "formatters": {
         "json": {
@@ -98,9 +101,7 @@ log_config = {
         "console": {
             "()": PrettyFastStreamConsoleFormatter,
         },
-        "sqlalchemy": {
-            "()": PrettySQLAlchemyConsoleFormatter
-        }
+        "sqlalchemy": {"()": PrettySQLAlchemyConsoleFormatter},
     },
 }
 

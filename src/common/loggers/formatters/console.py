@@ -26,6 +26,7 @@ class PrettyFastStreamConsoleFormatter(logging.Formatter):
         except AttributeError:
             return f"{timestamp} | {level_colored} | {record.name}:{record.funcName}:{record.lineno} - {record.getMessage()}"
 
+
 class PrettySQLAlchemyConsoleFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         dt = datetime.fromtimestamp(record.created, tz=UTC)

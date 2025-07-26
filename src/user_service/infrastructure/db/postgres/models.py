@@ -19,7 +19,9 @@ class UserModel(IdBase):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan", lazy="selectin"
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
 
@@ -31,8 +33,16 @@ class UserRoleAssignmentModel(IdBase):
     assigned_at: Mapped[datetime]
     expires_at: Mapped[datetime | None]
 
-    user = relationship("UserModel", back_populates="role_assignments", lazy="selectin")
-    role = relationship("RoleModel", back_populates="role_assignments", lazy="selectin")
+    user = relationship(
+        "UserModel",
+        back_populates="role_assignments",
+        lazy="selectin",
+    )
+    role = relationship(
+        "RoleModel",
+        back_populates="role_assignments",
+        lazy="joined",
+    )
 
 
 class PermissionModel(IdBase):
@@ -42,7 +52,9 @@ class PermissionModel(IdBase):
     description: Mapped[str] = mapped_column(String(255), nullable=False)
 
     roles: Mapped[list["RoleModel"]] = relationship(
-        secondary="role_permissions", back_populates="permissions", lazy="selectin"
+        secondary="role_permissions",
+        back_populates="permissions",
+        lazy="selectin",
     )
 
 
@@ -61,7 +73,10 @@ class RoleModel(IdBase):
     permissions: Mapped[list["PermissionModel"]] = relationship(
         secondary="role_permissions", back_populates="roles", lazy="selectin"
     )
-    role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(back_populates="role", lazy="selectin")
+    role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(
+        back_populates="role",
+        lazy="selectin",
+    )
 
 
 class BlacklistedTokenModel(IdBase):

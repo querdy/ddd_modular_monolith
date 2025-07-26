@@ -26,4 +26,4 @@ class GetUsersUseCase:
 
     async def execute(self) -> list[UserRead]:
         async with self.uow:
-            return await self.uow.users_read.get_all()
+            return await self.uow.users_read.get_many()

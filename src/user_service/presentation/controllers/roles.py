@@ -29,7 +29,7 @@ class RoleController(Controller):
         guards=[PermissionGuard("roles:read")],
         summary="Получить список всех ролей",
     )
-    async def get_all(self, uow: FromDishka[IUserServiceUoW]) -> list[Role]:
+    async def list(self, uow: FromDishka[IUserServiceUoW]) -> list[Role]:
         use_case = GetRolesUseCase(uow)
         result = await use_case.execute()
         return result
@@ -40,7 +40,7 @@ class RoleController(Controller):
         guards=[PermissionGuard("roles:read")],
         summary="Получить роль по ID",
     )
-    async def get_by_id(self, role_id: UUID, uow: FromDishka[IUserServiceUoW]) -> RoleRead:
+    async def get(self, role_id: UUID, uow: FromDishka[IUserServiceUoW]) -> Role:
         use_case = GetRoleByIdUseCase(uow)
         result = await use_case.execute(role_id)
         return result

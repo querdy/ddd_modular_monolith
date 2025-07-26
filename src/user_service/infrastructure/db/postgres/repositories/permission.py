@@ -3,6 +3,7 @@ from uuid import UUID
 from sqlalchemy import select, func
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import noload
 
 from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.domain.enities.permission import Permission
@@ -26,7 +27,13 @@ class PermissionRepository:
         return permission_to_domain(orm_permission)
 
     async def get_by_ids(self, permission_ids: list[UUID]) -> list[Permission]:
-        stmt = select(PermissionModel).where(PermissionModel.id.in_(permission_ids))
+        stmt = (
+            select(PermissionModel)
+            .where(PermissionModel.id.in_(permission_ids))
+            .options(
+                noload(PermissionModel.roles)
+            )
+        )
         result = await self.session.execute(stmt)
         orm_permissions = result.scalars().all()
         return [permission_to_domain(permission) for permission in orm_permissions]
@@ -53,7 +60,14 @@ class PermissionReadRepository:
         return result.scalar()
 
     async def get_many(self, limit: int, offset: int, **filters) -> list[PermissionRead]:
-        stmt = select(PermissionModel).limit(limit).offset(offset)
+        stmt = (
+            select(PermissionModel)
+            .limit(limit)
+            .offset(offset)
+            .options(
+                noload(PermissionModel.roles)
+            )
+        )
         if role_id := filters.get("role_id", False):
             stmt = stmt.join(PermissionModel.roles).where(RoleModel.id == role_id)
         result = await self.session.execute(stmt)
