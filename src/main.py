@@ -125,7 +125,11 @@ app = Litestar(
     route_handlers=[router, metric_router],
     logging_config=litestar_config,
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
-    on_startup=[broker.start, update_admin_role_permissions, create_test_data],
+    on_startup=[
+        broker.start,
+        # update_admin_role_permissions,
+        # create_test_data
+    ],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(
         allow_origins=["http://localhost:3000", "http://127.0.0.1:3001"],

@@ -38,7 +38,7 @@ class Stage:
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def change_status(self, status: str, message: Message | None = None) -> None:
-        if status in (StageStatus.CREATED, StageStatus.IN_PROGRESS):
+        if status in (StageStatus.CREATED, ):
             raise DomainError(f"Нельзя вручную установить статус `{status}`")
         if status == StageStatus.CONFIRMED and message is None:
             raise DomainError(f"Нельзя установить статус `{status}` без сообщения")

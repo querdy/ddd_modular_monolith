@@ -21,7 +21,6 @@ class UserModel(IdBase):
     role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
     )
 
 
@@ -36,12 +35,10 @@ class UserRoleAssignmentModel(IdBase):
     user = relationship(
         "UserModel",
         back_populates="role_assignments",
-        lazy="selectin",
     )
     role = relationship(
         "RoleModel",
         back_populates="role_assignments",
-        lazy="joined",
     )
 
 
@@ -54,7 +51,6 @@ class PermissionModel(IdBase):
     roles: Mapped[list["RoleModel"]] = relationship(
         secondary="role_permissions",
         back_populates="permissions",
-        lazy="selectin",
     )
 
 
@@ -75,7 +71,6 @@ class RoleModel(IdBase):
     )
     role_assignments: Mapped[list["UserRoleAssignmentModel"]] = relationship(
         back_populates="role",
-        lazy="selectin",
     )
 
 

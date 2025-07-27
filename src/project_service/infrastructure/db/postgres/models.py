@@ -21,7 +21,6 @@ class ProjectModel(IdBase):
         "SubprojectTemplateModel",
         back_populates="project",
         cascade="all, delete-orphan",
-        lazy="joined",
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     progress: Mapped[float] = mapped_column(Float, nullable=False)
@@ -29,7 +28,6 @@ class ProjectModel(IdBase):
         "SubprojectModel",
         back_populates="project",
         cascade="all, delete-orphan",
-        lazy="selectin",
     )
 
 
@@ -47,13 +45,11 @@ class SubprojectModel(IdBase):
     project: Mapped["ProjectModel"] = relationship(
         "ProjectModel",
         back_populates="subprojects",
-        lazy="selectin",
     )
     stages: Mapped[list["StageModel"]] = relationship(
         "StageModel",
         back_populates="subproject",
         cascade="all, delete-orphan",
-        lazy="selectin",
     )
 
 
@@ -75,13 +71,11 @@ class StageModel(IdBase):
     subproject: Mapped["SubprojectModel"] = relationship(
         "SubprojectModel",
         back_populates="stages",
-        lazy="selectin",
     )
     messages: Mapped[list["MessageModel"]] = relationship(
         "MessageModel",
         back_populates="stage",
         cascade="all, delete-orphan",
-        lazy="selectin",
         order_by="asc(MessageModel.created_at)",
     )
 
@@ -101,7 +95,6 @@ class MessageModel(IdBase):
     stage: Mapped[StageModel] = relationship(
         "StageModel",
         back_populates="messages",
-        lazy="selectin",
     )
 
 
@@ -117,13 +110,11 @@ class SubprojectTemplateModel(IdBase):
     project = relationship(
         "ProjectModel",
         back_populates="template",
-        lazy="joined",
     )
     stages: Mapped[list["StageTemplateModel"]] = relationship(
         "StageTemplateModel",
         back_populates="subproject_template",
         cascade="all, delete-orphan",
-        lazy="selectin",
     )
 
 
@@ -142,5 +133,4 @@ class StageTemplateModel(IdBase):
     subproject_template: Mapped["SubprojectTemplateModel"] = relationship(
         "SubprojectTemplateModel",
         back_populates="stages",
-        lazy="selectin",
     )

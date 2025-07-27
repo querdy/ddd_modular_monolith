@@ -48,16 +48,25 @@ class Project:
         subproject = self.get_subproject_by_id(subproject_id)
         if subproject is None:
             raise DomainError(f"Подпроект с id `{subproject_id}` не найден")
-        template = SubprojectTemplate.create(
-            stages=[
+        if self.template is not None:
+            self.template.stages = [
                 StageTemplate.create(
                     name=stage.name,
                     description=stage.description,
                 )
                 for stage in subproject.stages
             ]
-        )
-        self.template = template
+        else:
+            template = SubprojectTemplate.create(
+                stages=[
+                    StageTemplate.create(
+                        name=stage.name,
+                        description=stage.description,
+                    )
+                    for stage in subproject.stages
+                ]
+            )
+            self.template = template
 
     def _update_status(self):
         if len(self.subprojects) == 0:
