@@ -18,6 +18,7 @@ class Stage:
     created_at: datetime
     updated_at: datetime
     status: StageStatus
+
     messages: list[Message]
 
     @classmethod

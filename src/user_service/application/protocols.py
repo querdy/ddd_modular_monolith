@@ -60,6 +60,7 @@ class IPermissionReadRepository(Protocol):
 
 class IBlacklistRepository(Protocol):
     async def add(self, blacklisted_token: BlacklistedToken) -> None: ...
+    async def exists(self, blacklisted_token: str) -> bool: ...
 
 
 class IUserServiceUoW(Protocol):

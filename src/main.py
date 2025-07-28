@@ -111,7 +111,7 @@ async def create_test_data():
             if not pr:
                 for idx in range(50):
                     project = Project.create(name=f"Проект-{idx}")
-                    for jdx in range(100):
+                    for jdx in range(50):
                         subproject = Subproject.create(name=f"Подпроект-{jdx}")
                         project.add_subproject(subproject)
                         for kdx in range(50):
@@ -127,8 +127,8 @@ app = Litestar(
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
     on_startup=[
         broker.start,
-        # update_admin_role_permissions,
-        # create_test_data
+        update_admin_role_permissions,
+        create_test_data
     ],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(

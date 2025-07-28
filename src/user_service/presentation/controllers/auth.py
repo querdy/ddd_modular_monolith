@@ -6,12 +6,13 @@ from litestar import Controller, post, Response, get, Request, status_codes
 from litestar.enums import RequestEncodingType
 from litestar.exceptions import HTTPException
 from litestar.params import Body
+from loguru import logger
 
 from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.auth import (
     LoginUserUseCase,
-    GenerateAccessAndRefreshTokensUseCase,
+    UpdateAccessAndRefreshTokensUseCase,
     LogoutUserUseCase,
 )
 from src.user_service.presentation.schemas.user import (
@@ -45,9 +46,9 @@ class AuthController(Controller):
     async def refresh_access_token(
         self, request: Request, uow: FromDishka[IUserServiceUoW]
     ) -> Response[TokenResponseSchema]:
-        user_case = GenerateAccessAndRefreshTokensUseCase(uow)
+        user_case = UpdateAccessAndRefreshTokensUseCase(uow)
         try:
-            result = await user_case.execute(request.auth.sub)
+            result = await user_case.execute(request.auth.sub, refresh_token=request.user)
         except ApplicationError as error:
             raise HTTPException(
                 status_code=status_codes.HTTP_401_UNAUTHORIZED,

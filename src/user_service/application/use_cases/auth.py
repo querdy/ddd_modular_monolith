@@ -51,12 +51,14 @@ class LoginUserUseCase:
             return generate_token_response(user)
 
 
-class GenerateAccessAndRefreshTokensUseCase:
+class UpdateAccessAndRefreshTokensUseCase:
     def __init__(self, uow: IUserServiceUoW):
         self.uow = uow
 
-    async def execute(self, user_id: UUID) -> Response:
+    async def execute(self, user_id: UUID, refresh_token: str) -> Response:
         async with self.uow:
+            if await self.uow.blacklist.exists(refresh_token):
+                raise ApplicationError("Некорректный refresh токен")
             user = await self.uow.users_read.get(user_id)
             if user is None:
                 raise ApplicationError("Некорректный refresh токен")
