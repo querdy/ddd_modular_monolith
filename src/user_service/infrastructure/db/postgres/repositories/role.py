@@ -19,23 +19,14 @@ class RoleRepository:
         stmt = (
             select(RoleModel)
             .where(RoleModel.id == role_id)
-            .options(
-                selectinload(RoleModel.permissions),
-                noload(RoleModel.role_assignments)
-            )
+            .options(selectinload(RoleModel.permissions), noload(RoleModel.role_assignments))
         )
         result = await self.session.execute(stmt)
         orm_role = result.scalar()
         return role_to_domain(orm_role)
 
     async def get_many(self, role_ids: list[UUID] = None) -> list[Role]:
-        stmt = (
-            select(RoleModel)
-            .options(
-                noload(RoleModel.permissions),
-                noload(RoleModel.role_assignments)
-            )
-        )
+        stmt = select(RoleModel).options(noload(RoleModel.permissions), noload(RoleModel.role_assignments))
         if role_ids is not None:
             stmt = stmt.where(RoleModel.id.in_(role_ids))
         result = await self.session.execute(stmt)
@@ -43,10 +34,7 @@ class RoleRepository:
         return [role_to_domain(orm_role) for orm_role in orm_roles]
 
     async def get_by_name(self, name: str) -> Role:
-        stmt = (
-            select(RoleModel)
-            .where(RoleModel.name == name)
-        )
+        stmt = select(RoleModel).where(RoleModel.name == name)
         result = await self.session.execute(stmt)
         orm_user = result.scalar()
         return role_to_domain(orm_user) if orm_user else None
@@ -57,9 +45,12 @@ class RoleRepository:
 
     async def update(self, role: Role) -> Role:
         orm_model = role_to_orm(role)
-        new_role = await self.session.merge(orm_model, options=[
-            noload(RoleModel.role_assignments),
-        ])
+        new_role = await self.session.merge(
+            orm_model,
+            options=[
+                noload(RoleModel.role_assignments),
+            ],
+        )
         return role_to_domain(new_role)
 
 

@@ -1,15 +1,13 @@
 from uuid import UUID
 
-from loguru import logger
-from sqlalchemy import select, func, delete, desc, asc
+from sqlalchemy import select, func, delete, desc
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import contains_eager, noload, selectinload, joinedload
+from sqlalchemy.orm import noload, selectinload, joinedload
 
 from src.common.db.counter import count_queries
 from src.common.exceptions.domain import DomainError
 from src.common.exceptions.infrastructure import InfrastructureError
-from src.project_service.application.protocols import IProjectReadRepository
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject
@@ -17,14 +15,11 @@ from src.project_service.infrastructure.db.postgres.models import (
     ProjectModel,
     SubprojectModel,
     StageModel,
-    MessageModel, StageTemplateModel, SubprojectTemplateModel,
+    SubprojectTemplateModel,
 )
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
-from src.project_service.infrastructure.read_models.project import ProjectRead
-from src.project_service.infrastructure.read_models.stage import StageRead
-from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 
 
 class ProjectRepository:
@@ -48,8 +43,7 @@ class ProjectRepository:
             select(ProjectModel)
             .where(ProjectModel.id == project_id)
             .options(
-                joinedload(ProjectModel.template)
-                .joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -82,13 +76,15 @@ class ProjectRepository:
     @count_queries
     async def update(self, project: Project) -> Project:
         orm_project = project_to_orm(project)
-        new_project = await self.session.merge(orm_project,
-                                               options=[
-                                                   joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
-                                                   selectinload(ProjectModel.subprojects).selectinload(
-                                                       SubprojectModel.stages).selectinload(
-                                                       StageModel.messages),
-                                               ])
+        new_project = await self.session.merge(
+            orm_project,
+            options=[
+                joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.messages),
+            ],
+        )
         return project_to_domain(new_project)
 
     @count_queries
@@ -108,8 +104,7 @@ class ProjectRepository:
             select(ProjectModel)
             .where(ProjectModel.id == subproject.project.id)
             .options(
-                joinedload(ProjectModel.template)
-                .joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -127,10 +122,7 @@ class ProjectRepository:
         stmt = (
             select(StageModel)
             .where(StageModel.id == stage_id)
-            .options(
-                joinedload(StageModel.subproject)
-                .joinedload(SubprojectModel.project)
-            )
+            .options(joinedload(StageModel.subproject).joinedload(SubprojectModel.project))
         )
 
         result_stage = await self.session.execute(stmt)
@@ -143,8 +135,7 @@ class ProjectRepository:
             select(ProjectModel)
             .where(ProjectModel.id == stage.subproject.project.id)
             .options(
-                joinedload(ProjectModel.template)
-                .joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -166,9 +157,6 @@ class ProjectRepository:
 class ProjectReadRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
-
-    async def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
-        ...
 
     @count_queries
     async def subprojects_count(self, **filters) -> int:
@@ -253,15 +241,6 @@ class ProjectReadRepository:
             .offset(offset)
             .order_by(desc(ProjectModel.created_at))
             .options(noload(ProjectModel.template), noload(ProjectModel.subprojects))
-            # .join(SubprojectModel, SubprojectModel.project_id == ProjectModel.id)
-            # .join(StageModel, StageModel.subproject_id == SubprojectModel.id)
-            # .join(MessageModel, MessageModel.stage_id == StageModel.id)
-            # .options(
-            #     joinedload(ProjectModel.template),
-            #     selectinload(ProjectModel.subprojects)
-            #     .selectinload(SubprojectModel.stages)
-            #     .selectinload(StageModel.messages)
-            # )
         )
         result = await self.session.execute(stmt)
         orm_projects = result.scalars().all()
@@ -275,8 +254,7 @@ class ProjectReadRepository:
             .where(ProjectModel.id == project_id)
             .order_by(desc(ProjectModel.created_at))
             .options(
-                joinedload(ProjectModel.template)
-                .joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
                 noload(ProjectModel.subprojects),
             )
         )

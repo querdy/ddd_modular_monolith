@@ -97,10 +97,7 @@ class UserReadRepository:
 
     @count_queries
     async def get_many(self, user_ids: list[UUID] = None) -> list[UserRead]:
-        stmt = (
-            select(UserModel)
-            .options(noload(UserModel.role_assignments))
-        )
+        stmt = select(UserModel).options(noload(UserModel.role_assignments))
         if user_ids is not None:
             stmt = stmt.where(UserModel.id.in_(user_ids))
         result = await self.session.execute(stmt)

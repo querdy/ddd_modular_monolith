@@ -5,6 +5,7 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 import contextlib
 
+
 def count_queries(func):
     @functools.wraps(func)
     async def wrapper(self, *args, **kwargs):
@@ -22,7 +23,7 @@ def count_queries(func):
 
         try:
             result = await func(self, *args, **kwargs)
-            logger.warning(f"[{func.__name__}] SQL-запросов выполнено: {counter['count']}")
+            logger.warning(f"[{self.__class__.__name__}.{func.__name__}] SQL-запросов выполнено: {counter['count']}")
             return result
         finally:
             event.remove(conn.sync_connection, "before_cursor_execute", before_cursor_execute)

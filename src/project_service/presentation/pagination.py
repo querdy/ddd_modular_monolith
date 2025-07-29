@@ -71,3 +71,16 @@ class StageOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
             )
             for stage in stages
         ]
+
+
+class StageStatusHistoryOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
+    def __init__(self, uow: IProjectServiceUoW, mb: IMessageBus):
+        self.uow = uow
+        self.mb = mb
+
+    async def get_total(self, **filters) -> int:
+        return await self.uow.stage_status_history.count(**filters)
+
+    async def get_items(self, limit: int, offset: int, **filters) -> list[T]:
+        objs = await self.uow.stage_status_history.get_many(limit, offset, **filters)
+        return objs

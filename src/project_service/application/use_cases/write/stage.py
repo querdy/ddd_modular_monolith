@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import TaskGroup
+from datetime import datetime, UTC
 from typing import Sequence
 from uuid import UUID
 
@@ -16,6 +17,7 @@ from src.common.message_bus.schemas import (
     GetUserInfoListQuery,
     GetUserInfoListResponse,
 )
+from src.project_service.application.events.stage import StageStatusChangedEvent
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
@@ -82,6 +84,14 @@ class ChangeStageStatusUseCase:
                 message = Message.create(user_id, message)
             project = await self.uow.projects.get_by_stage(stage_id)
             new_stage = project.change_stage_status(stage_id, status, message)
+            await self.mb.publish(
+                StageStatusChangedEvent(
+                    stage_id=new_stage.id,
+                    to_status=new_stage.status,
+                    changed_by=user_id,
+                    changed_at=datetime.now(UTC).replace(tzinfo=None),
+                )
+            )
             await self.uow.projects.update(project)
 
             author_ids = {msg.author_id for msg in new_stage.messages}

@@ -66,11 +66,11 @@ log_config = {
             "level": "INFO",
             "propagate": False,
         },
-        "sqlalchemy.engine": {
-            "handlers": ["sqlalchemy_console"],
-            "level": "INFO",
-            "propagate": False,
-        },
+        # "sqlalchemy.engine": {
+        #     "handlers": ["sqlalchemy_console"],
+        #     "level": "INFO",
+        #     "propagate": False,
+        # },
     },
     "handlers": {
         "file": {

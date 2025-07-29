@@ -28,11 +28,7 @@ class PermissionRepository:
 
     async def get_by_ids(self, permission_ids: list[UUID]) -> list[Permission]:
         stmt = (
-            select(PermissionModel)
-            .where(PermissionModel.id.in_(permission_ids))
-            .options(
-                noload(PermissionModel.roles)
-            )
+            select(PermissionModel).where(PermissionModel.id.in_(permission_ids)).options(noload(PermissionModel.roles))
         )
         result = await self.session.execute(stmt)
         orm_permissions = result.scalars().all()
@@ -60,14 +56,7 @@ class PermissionReadRepository:
         return result.scalar()
 
     async def get_many(self, limit: int, offset: int, **filters) -> list[PermissionRead]:
-        stmt = (
-            select(PermissionModel)
-            .limit(limit)
-            .offset(offset)
-            .options(
-                noload(PermissionModel.roles)
-            )
-        )
+        stmt = select(PermissionModel).limit(limit).offset(offset).options(noload(PermissionModel.roles))
         if role_id := filters.get("role_id", False):
             stmt = stmt.join(PermissionModel.roles).where(RoleModel.id == role_id)
         result = await self.session.execute(stmt)

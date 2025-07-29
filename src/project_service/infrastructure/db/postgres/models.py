@@ -134,3 +134,12 @@ class StageTemplateModel(IdBase):
         "SubprojectTemplateModel",
         back_populates="stages",
     )
+
+
+class StageStatusHistoryModel(IdBase):
+    __tablename__ = "stage_status_history"
+
+    stage_id: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True))
+    to_status: Mapped[str] = mapped_column(String(16), nullable=False)
+    changed_by: Mapped[UUID] = mapped_column(DBUUID(as_uuid=True))
+    changed_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)

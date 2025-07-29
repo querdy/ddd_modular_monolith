@@ -128,7 +128,7 @@ app = Litestar(
     on_startup=[
         broker.start,
         update_admin_role_permissions,
-        create_test_data
+        # create_test_data
     ],
     on_shutdown=[broker.close],
     cors_config=CORSConfig(
