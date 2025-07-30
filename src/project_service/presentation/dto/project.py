@@ -18,7 +18,13 @@ class ProjectCreateResponseDTO(DataclassDTO[Project]):
 
 
 class ProjectShortResponseDTO(DataclassDTO[Project]):
-    config = DTOConfig(max_nested_depth=0, exclude={"subprojects", "template"})
+    config = DTOConfig(
+        max_nested_depth=0,
+        exclude={
+            "subprojects",
+            "template",
+        },
+    )
 
 
 class ProjectReadResponseDTO(PydanticDTO[ProjectRead]):

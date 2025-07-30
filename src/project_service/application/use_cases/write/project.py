@@ -17,8 +17,8 @@ class CreateProjectUseCase:
         async with self.uow:
             project = Project.create(name=name, description=description)
             await self.uow.projects.add(project)
-            await self.mb.publish(ProjectCreatedEvent.model_validate(project))
-            return project
+        await self.mb.publish(ProjectCreatedEvent.model_validate(project))
+        return project
 
 
 class DeleteProjectUseCase:

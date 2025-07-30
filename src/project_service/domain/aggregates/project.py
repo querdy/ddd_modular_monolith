@@ -28,6 +28,8 @@ class Project:
 
     template: SubprojectTemplate | None = field(default=None)
 
+    _events = []
+
     @classmethod
     def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
         if subprojects is None:

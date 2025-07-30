@@ -47,7 +47,8 @@ class StageOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
         author_ids = {msg.author_id for stage in stages for msg in stage.messages}
         user_map: dict[UUID, GetUserInfoResponse] = {}
         query_result = await self.mb.query(
-            GetUserInfoListQuery(ids=list(author_ids)), response_model=GetUserInfoListResponse
+            GetUserInfoListQuery(ids=list(author_ids)),
+            response_model=GetUserInfoListResponse,
         )
         for user in query_result.users:
             user_map[user.id] = user

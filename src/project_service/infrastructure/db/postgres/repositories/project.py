@@ -104,7 +104,7 @@ class ProjectRepository:
             select(ProjectModel)
             .where(ProjectModel.id == subproject.project.id)
             .options(
-                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
