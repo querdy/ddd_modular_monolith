@@ -45,6 +45,15 @@ class Project:
             files=[],
         )
 
+    def add_file(self, filename: str, content_type: str, size: int, object_key: str) -> None:
+        file = FileAttachment.create(
+            filename=filename,
+            content_type=content_type,
+            size=size,
+            object_key=object_key,
+        )
+        self.files.append(file)
+
     def make_template_from_subproject(self, subproject_id: UUID):
         subproject = self.get_subproject_by_id(subproject_id)
         if subproject is None:

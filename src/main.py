@@ -53,7 +53,6 @@ container = make_async_container(
     UoWProjectServiceProvider(),
     MinioClientProvider(),
     MessagingProvider(),
-
 )
 
 metric_router = Router(

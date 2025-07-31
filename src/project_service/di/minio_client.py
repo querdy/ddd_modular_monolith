@@ -7,7 +7,7 @@ class MinioClientProvider(Provider):
     def get_minio_client(self) -> Minio:
         return Minio(
             endpoint="minio:9000",
-            access_key="myaccesskey",
-            secret_key="mysecretkey",
+            access_key="admin",
+            secret_key="admin123",
             secure=False,
         )

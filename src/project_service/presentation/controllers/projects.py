@@ -1,13 +1,21 @@
-from uuid import UUID
+import io
+from typing import Annotated, List
+from uuid import UUID, uuid4
 
 from dishka import FromDishka
 from litestar import Controller, post, get, delete, put
+from litestar.datastructures import UploadFile
 from litestar.dto import DTOData
+from litestar.enums import RequestEncodingType
+from litestar.params import Body, Parameter
+from loguru import logger
+from minio import Minio
 
 from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.litestar_.guards.permission import PermissionGuard
 from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.application.services.store import generate_unique_object_key
 from src.project_service.application.use_cases.read.project import GetProjectUseCase, GetProjectsUseCase
 from src.project_service.application.use_cases.write.project import (
     CreateProjectUseCase,
@@ -136,5 +144,37 @@ class ProjectsController(Controller):
         result = await use_case.execute(project_id, data_instance.name, data_instance.description)
         return result
 
-    # @post(
-    #     path="/{project_id: uuid}/template", )
+    @post(
+        path="/{project_id: uuid}/upload",
+        summary="Загрузка файлов для проекта",
+    )
+    async def upload_project_files(
+        self,
+        project_id: Annotated[UUID, Parameter()],
+        data: Annotated[List[UploadFile], Body(media_type=RequestEncodingType.MULTI_PART)],
+        minio: FromDishka[Minio],
+        uow: FromDishka[IProjectServiceUoW],
+    ) -> None:
+        async with uow:
+            project = await uow.projects.get(project_id)
+            for file in data:
+                content = await file.read()
+                object_key = generate_unique_object_key(
+                    minio=minio,
+                    bucket="files",
+                    base_path=f"projects/{project_id}",
+                    filename=file.filename,
+                )
+                minio.put_object(
+                    bucket_name="files",
+                    object_name=object_key,
+                    data=io.BytesIO(content),
+                    length=len(content),
+                    content_type=file.content_type,
+                )
+                project.add_file(
+                    filename=object_key.split("/")[-1],
+                    content_type=file.content_type,
+                    size=len(content),
+                    object_key=object_key,
+                )
