@@ -8,7 +8,9 @@ services:
     environment:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=admin123
-      - MINIO_DEFAULT_BUCKETS=mybucket
+      - MINIO_ACCESS_KEY=myaccesskey
+      - MINIO_SECRET_KEY=mysecretkey
+      - MINIO_DEFAULT_BUCKETS=files
     volumes:
       - minio_data:/bitnami/minio/data
     command: ["minio", "server", "--console-address", ":9001", "/bitnami/minio/data"]

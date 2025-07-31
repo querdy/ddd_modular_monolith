@@ -135,3 +135,6 @@ class ProjectsController(Controller):
         use_case = UpdateProjectUseCase(uow, mb)
         result = await use_case.execute(project_id, data_instance.name, data_instance.description)
         return result
+
+    # @post(
+    #     path="/{project_id: uuid}/template", )

@@ -25,6 +25,7 @@ from src.common.litestar_.monitoring.prometheus import CustomPrometheusControlle
 from src.common.message_bus.broker import broker
 from src.common.loggers.config import litestar_config
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.di.minio_client import MinioClientProvider
 from src.project_service.di.uow import UoWProjectServiceProvider
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
@@ -50,7 +51,9 @@ container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
     UoWProjectServiceProvider(),
+    MinioClientProvider(),
     MessagingProvider(),
+
 )
 
 metric_router = Router(

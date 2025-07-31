@@ -40,6 +40,7 @@ class UpdateProjectUseCase:
         async with self.uow:
             project = await self.uow.projects.get(project_id)
             project.update(name, description)
+            await self.uow.projects.update(project)
             return project
 
 

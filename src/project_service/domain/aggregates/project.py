@@ -1,11 +1,10 @@
 from dataclasses import dataclass, field
 from datetime import datetime, UTC
-from typing import Self, Optional
+from typing import Self
 from uuid import UUID, uuid4
 
-from loguru import logger
-
 from src.common.exceptions.domain import DomainError
+from src.project_service.domain.entities.file_attachment import FileAttachment
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.subproject import Subproject, SubprojectStatus
@@ -25,10 +24,9 @@ class Project:
     status: ProjectStatus
     progress: float
     subprojects: list[Subproject]
+    files: list[FileAttachment] = field(default_factory=list)
 
     template: SubprojectTemplate | None = field(default=None)
-
-    _events = []
 
     @classmethod
     def create(cls, name: str, description: str | None = None, subprojects: list[Subproject] | None = None) -> Self:
@@ -42,8 +40,9 @@ class Project:
             updated_at=datetime.now(UTC).replace(tzinfo=None),
             status=ProjectStatus.CREATED,
             subprojects=subprojects,
-            progress=0,
+            progress=0.0,
             template=None,
+            files=[],
         )
 
     def make_template_from_subproject(self, subproject_id: UUID):

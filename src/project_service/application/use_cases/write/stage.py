@@ -73,7 +73,12 @@ class ChangeStageStatusUseCase:
         self.mb = mb
 
     async def execute(
-        self, stage_id: UUID, status: str, user_id: UUID, permissions: list[str], message: str | None = None
+        self,
+        stage_id: UUID,
+        status: str,
+        user_id: UUID,
+        permissions: list[str],
+        message: str | None = None,
     ) -> StageRead:
         async with self.uow:
             if status == StageStatus.COMPLETED and "stages:change_status_to_completed" not in permissions:
@@ -91,7 +96,7 @@ class ChangeStageStatusUseCase:
                 stage_id=new_stage.id,
                 to_status=new_stage.status,
                 changed_by=user_id,
-                changed_at=datetime.now(UTC).replace(tzinfo=None),
+                changed_at=new_stage.updated_at,
             )
         )
         author_ids = {msg.author_id for msg in new_stage.messages}
