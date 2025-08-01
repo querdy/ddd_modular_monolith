@@ -17,6 +17,7 @@ from litestar.openapi.plugins import (
 from litestar.openapi.spec import Components, SecurityScheme
 from loguru import logger
 
+from src.common.litestar_.controllers.download import DownloadController
 from src.common.litestar_.di.message_bus import MessagingProvider
 from src.common.exceptions.application import ApplicationError
 from src.common.exceptions.infrastructure import InfrastructureError
@@ -24,6 +25,7 @@ from src.common.litestar_.exception_handlers import log_exception
 from src.common.litestar_.monitoring.prometheus import CustomPrometheusController, prometheus_config
 from src.common.message_bus.broker import broker
 from src.common.loggers.config import litestar_config
+from src.common.storage.s3 import S3ClientProvider
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.di.minio_client import MinioClientProvider
 from src.project_service.di.uow import UoWProjectServiceProvider
@@ -51,7 +53,8 @@ container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
     UoWProjectServiceProvider(),
-    MinioClientProvider(),
+    # MinioClientProvider(),
+    S3ClientProvider(),
     MessagingProvider(),
 )
 
@@ -72,6 +75,7 @@ router = DishkaRouter(
         ProjectsController,
         SubProjectsController,
         StagesController,
+        DownloadController,
     ],
 )
 
@@ -144,6 +148,7 @@ app = Litestar(
         ApplicationError: log_exception,
         InfrastructureError: log_exception,
     },
+    request_max_body_size=10 * 1024 * 1024,
     openapi_config=OpenAPIConfig(
         title="IT-M Task Tracker",
         version="0.0.1",

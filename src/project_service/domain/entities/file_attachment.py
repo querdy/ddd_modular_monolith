@@ -13,15 +13,15 @@ class FileAttachment:
     content_type: str
     size: int
     uploaded_at: datetime
-    object_key: str
+    path: str
 
     @classmethod
-    def create(cls, filename: str, content_type: str, size: int, object_key: str) -> Self:
+    def create(cls, filename: str, content_type: str, size: int, path: str) -> Self:
         return cls(
             id=uuid4(),
             uploaded_at=datetime.now(UTC).replace(tzinfo=None),
             filename=FileName.create(filename),
             content_type=content_type,
             size=size,
-            object_key=object_key,
+            path=path,
         )

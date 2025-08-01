@@ -44,6 +44,7 @@ class ProjectRepository:
             .where(ProjectModel.id == project_id)
             .options(
                 joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -64,6 +65,7 @@ class ProjectRepository:
             .offset(offset)
             .order_by(desc(ProjectModel.created_at))
             .options(
+                selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages)
@@ -80,6 +82,7 @@ class ProjectRepository:
             orm_project,
             options=[
                 joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -105,6 +108,7 @@ class ProjectRepository:
             .where(ProjectModel.id == subproject.project.id)
             .options(
                 joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -136,6 +140,7 @@ class ProjectRepository:
             .where(ProjectModel.id == stage.subproject.project.id)
             .options(
                 joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -240,7 +245,7 @@ class ProjectReadRepository:
             .limit(limit)
             .offset(offset)
             .order_by(desc(ProjectModel.created_at))
-            .options(noload(ProjectModel.template), noload(ProjectModel.subprojects))
+            .options(noload(ProjectModel.template), noload(ProjectModel.subprojects), noload(ProjectModel.files),)
         )
         result = await self.session.execute(stmt)
         orm_projects = result.scalars().all()
@@ -255,6 +260,7 @@ class ProjectReadRepository:
             .order_by(desc(ProjectModel.created_at))
             .options(
                 joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
+                selectinload(ProjectModel.files),
                 noload(ProjectModel.subprojects),
             )
         )

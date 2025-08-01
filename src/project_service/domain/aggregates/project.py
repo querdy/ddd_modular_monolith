@@ -45,12 +45,12 @@ class Project:
             files=[],
         )
 
-    def add_file(self, filename: str, content_type: str, size: int, object_key: str) -> None:
+    def add_file(self, filename: str, content_type: str, size: int, path: str) -> None:
         file = FileAttachment.create(
             filename=filename,
             content_type=content_type,
             size=size,
-            object_key=object_key,
+            path=path,
         )
         self.files.append(file)
 

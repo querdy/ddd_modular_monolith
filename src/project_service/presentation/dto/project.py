@@ -44,6 +44,7 @@ class ProjectResponseDTO(DataclassDTO[Project]):
         max_nested_depth=2,
         exclude={
             "subprojects",
+            "files.0.object_key"
         },
     )
 

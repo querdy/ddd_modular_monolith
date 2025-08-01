@@ -1,6 +1,6 @@
 import io
-from typing import Annotated, List
-from uuid import UUID, uuid4
+from typing import Annotated, List, AsyncIterator
+from uuid import UUID
 
 from dishka import FromDishka
 from litestar import Controller, post, get, delete, put
@@ -10,6 +10,7 @@ from litestar.enums import RequestEncodingType
 from litestar.params import Body, Parameter
 from loguru import logger
 from minio import Minio
+from types_aiobotocore_s3.client import S3Client
 
 from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.litestar_.guards.permission import PermissionGuard
@@ -24,7 +25,6 @@ from src.project_service.application.use_cases.write.project import (
     CreateTemplateForProjectUseCase,
 )
 from src.project_service.domain.aggregates.project import Project
-from src.project_service.infrastructure.read_models.project import ProjectRead
 from src.project_service.presentation.dto.project import (
     ProjectCreateRequestDTO,
     ProjectCreateResponseDTO,
@@ -32,8 +32,6 @@ from src.project_service.presentation.dto.project import (
     ProjectResponseDTO,
     ProjectUpdateRequestDTO,
     CreateTemplateRequestDTO,
-    ProjectReadResponseDTO,
-    ProjectReadShortResponseDTO,
 )
 from src.project_service.presentation.schemas.project import (
     ProjectCreateSchema,
@@ -144,6 +142,11 @@ class ProjectsController(Controller):
         result = await use_case.execute(project_id, data_instance.name, data_instance.description)
         return result
 
+    # @get(
+    #     path="",
+    #     summary="Получение файла"
+    # )
+
     @post(
         path="/{project_id: uuid}/upload",
         summary="Загрузка файлов для проекта",
@@ -152,29 +155,30 @@ class ProjectsController(Controller):
         self,
         project_id: Annotated[UUID, Parameter()],
         data: Annotated[List[UploadFile], Body(media_type=RequestEncodingType.MULTI_PART)],
-        minio: FromDishka[Minio],
+        s3_client: FromDishka[S3Client],
         uow: FromDishka[IProjectServiceUoW],
     ) -> None:
         async with uow:
             project = await uow.projects.get(project_id)
             for file in data:
                 content = await file.read()
-                object_key = generate_unique_object_key(
-                    minio=minio,
+                object_key = await generate_unique_object_key(
+                    s3_client=s3_client,
                     bucket="files",
                     base_path=f"projects/{project_id}",
                     filename=file.filename,
                 )
-                minio.put_object(
-                    bucket_name="files",
-                    object_name=object_key,
-                    data=io.BytesIO(content),
-                    length=len(content),
-                    content_type=file.content_type,
+                await s3_client.put_object(
+                    Bucket="files",
+                    Key=object_key,
+                    Body=content,
+                    ContentType=file.content_type,
+                    ContentLength=len(content),
                 )
                 project.add_file(
                     filename=object_key.split("/")[-1],
                     content_type=file.content_type,
                     size=len(content),
-                    object_key=object_key,
+                    path=object_key,
                 )
+            await uow.projects.update(project)
