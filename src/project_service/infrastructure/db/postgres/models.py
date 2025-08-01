@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime, func, Float
+from sqlalchemy import UUID as DBUUID, String, ForeignKey, DateTime, func, Float, Integer
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 
@@ -29,6 +29,17 @@ class ProjectModel(IdBase):
         back_populates="project",
         cascade="all, delete-orphan",
     )
+
+
+class ProjectFileAttachment(IdBase):
+    __tablename__ = "project_files"
+
+    project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id", ondelete="CASCADE"))
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    content_type: Mapped[str] = mapped_column(String, nullable=False)
+    size: Mapped[int] = mapped_column(Integer, nullable=False)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    object_key: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
 
 class SubprojectModel(IdBase):
