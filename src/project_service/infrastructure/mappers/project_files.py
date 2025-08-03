@@ -9,6 +9,7 @@ from src.project_service.infrastructure.db.postgres.models import ProjectFileAtt
 def project_file_to_orm(obj) -> ProjectFileAttachmentModel:
     raise NotImplementedError(f"No orm mapper for {type(obj)}")
 
+
 @project_file_to_orm.register
 def _(obj: FileAttachment) -> ProjectFileAttachmentModel:
     return ProjectFileAttachmentModel(
@@ -20,9 +21,11 @@ def _(obj: FileAttachment) -> ProjectFileAttachmentModel:
         path=obj.path,
     )
 
+
 @singledispatch
 def project_file_to_domain(obj) -> FileAttachment:
     raise NotImplementedError(f"No domain mapper for {type(obj)}")
+
 
 @project_file_to_domain.register
 def _(obj: ProjectFileAttachmentModel) -> FileAttachment:

@@ -15,6 +15,5 @@ class S3ClientProvider(Provider):
             aws_access_key_id="admin",
             aws_secret_access_key="admin123",
             use_ssl=False,
-            ) as s3_client:
-                yield s3_client
-
+        ) as s3_client:
+            yield s3_client

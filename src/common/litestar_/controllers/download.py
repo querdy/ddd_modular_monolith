@@ -9,13 +9,10 @@ from types_aiobotocore_s3.client import S3Client
 
 class DownloadController(Controller):
     path = "/files"
-    tags=["Download"]
+    tags = ["Download"]
     bucket = "files"
 
-    @get(
-        path="/{file_path:path}",
-        summary="Скачать файл"
-    )
+    @get(path="/{file_path:path}", summary="Скачать файл")
     async def get_file(self, file_path: str, s3: FromDishka[S3Client]) -> Response:
         try:
             response = await s3.get_object(Bucket=self.bucket, Key=file_path)
@@ -30,11 +27,7 @@ class DownloadController(Controller):
         else:
             headers = {"Content-Disposition": f"attachment; filename*=UTF-8''{quote(file_path.split('/')[-1])}"}
         headers["Content-Length"] = str(response.get("ContentLength", 0))
-        return Stream(
-            content=response["Body"],
-            media_type=content_type,
-            headers=headers
-        )
+        return Stream(content=response["Body"], media_type=content_type, headers=headers)
 
     @get(path="/video/{file_path:path}", summary="Воспроизведение видео поддержкой Range")
     async def stream_video(self, file_path: str, request: Request, s3: FromDishka[S3Client]) -> Response:
@@ -57,11 +50,7 @@ class DownloadController(Controller):
         start, end = byte_range.split("-") if "-" in byte_range else (byte_range, "")
         range_value = f"bytes={start}-{end}"
         try:
-            s3_response = await s3.get_object(
-                Bucket=self.bucket,
-                Key=file_path,
-                Range=range_value
-            )
+            s3_response = await s3.get_object(Bucket=self.bucket, Key=file_path, Range=range_value)
         except Exception:
             raise HTTPException(
                 status_code=status_codes.HTTP_404_NOT_FOUND,

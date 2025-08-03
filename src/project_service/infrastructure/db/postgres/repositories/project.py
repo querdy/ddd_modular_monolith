@@ -68,7 +68,7 @@ class ProjectRepository:
                 selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
-                .selectinload(StageModel.messages)
+                .selectinload(StageModel.messages),
             )
         )
         result = await self.session.execute(stmt)
@@ -245,7 +245,11 @@ class ProjectReadRepository:
             .limit(limit)
             .offset(offset)
             .order_by(desc(ProjectModel.created_at))
-            .options(noload(ProjectModel.template), noload(ProjectModel.subprojects), noload(ProjectModel.files),)
+            .options(
+                noload(ProjectModel.template),
+                noload(ProjectModel.subprojects),
+                noload(ProjectModel.files),
+            )
         )
         result = await self.session.execute(stmt)
         orm_projects = result.scalars().all()

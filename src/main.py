@@ -15,7 +15,6 @@ from litestar.openapi.plugins import (
     ScalarRenderPlugin,
 )
 from litestar.openapi.spec import Components, SecurityScheme
-from loguru import logger
 
 from src.common.litestar_.controllers.download import DownloadController
 from src.common.litestar_.di.message_bus import MessagingProvider
@@ -27,7 +26,6 @@ from src.common.message_bus.broker import broker
 from src.common.loggers.config import litestar_config
 from src.common.storage.s3 import S3ClientProvider
 from src.project_service.application.protocols import IProjectServiceUoW
-from src.project_service.di.minio_client import MinioClientProvider
 from src.project_service.di.uow import UoWProjectServiceProvider
 from src.project_service.domain.aggregates.project import Project
 from src.project_service.domain.entities.stage import Stage
@@ -53,7 +51,6 @@ container = make_async_container(
     LitestarProvider(),
     UoWUserServiceProvider(),
     UoWProjectServiceProvider(),
-    # MinioClientProvider(),
     S3ClientProvider(),
     MessagingProvider(),
 )
@@ -76,7 +73,7 @@ simple_router = DishkaRouter(
     route_handlers=[
         DownloadController,
         CustomPrometheusController,
-    ]
+    ],
 )
 
 default_role_name = "Администратор"
@@ -128,7 +125,10 @@ async def create_test_data():
 
 app = Litestar(
     debug=True,
-    route_handlers=[api_router, simple_router, ],
+    route_handlers=[
+        api_router,
+        simple_router,
+    ],
     logging_config=litestar_config,
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
     on_startup=[

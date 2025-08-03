@@ -42,10 +42,7 @@ class ProjectReadShortResponseDTO(PydanticDTO[ProjectRead]):
 class ProjectResponseDTO(DataclassDTO[Project]):
     config = DTOConfig(
         max_nested_depth=2,
-        exclude={
-            "subprojects",
-            "files.0.object_key"
-        },
+        exclude={"subprojects", "files.0.object_key"},
     )
 
 
