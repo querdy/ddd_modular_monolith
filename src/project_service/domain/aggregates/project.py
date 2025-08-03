@@ -144,7 +144,7 @@ class Project:
         stage = subproject_with_stage.update_stage(stage_id, name, description)
         return stage
 
-    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None) -> Stage:
+    def change_stage_status(self, stage_id: UUID, status: str, message: Message | None = None) -> Stage:
         subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
         if subproject_with_stage is None:
             raise DomainError(f"Подпроект с этапом {stage_id} не найден")
