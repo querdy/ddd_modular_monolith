@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from litestar import Response, status_codes
-from litestar.exceptions import HTTPException
 
 from src.common.exceptions.application import ApplicationError
 from src.user_service.application.protocols import IUserServiceUoW

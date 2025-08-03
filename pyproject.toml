@@ -21,6 +21,7 @@ dependencies = [
     "pytest-asyncio>=1.1.0",
     "python-jose>=3.4.0",
     "sqlalchemy[asyncio]>=2.0.40",
+    "types-aiobotocore-s3>=2.23.2",
     "types-aiobotocore[s3]>=2.23.2",
     "uvicorn[standard]>=0.35.0",
 ]

@@ -9,6 +9,7 @@ from litestar.params import Body
 from loguru import logger
 
 from src.common.exceptions.application import ApplicationError
+from src.common.exceptions.infrastructure import InfrastructureError
 from src.user_service.application.protocols import IUserServiceUoW
 from src.user_service.application.use_cases.auth import (
     LoginUserUseCase,
@@ -33,13 +34,7 @@ class AuthController(Controller):
         data: Annotated[LoginRequestSchema, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[TokenResponseSchema]:
         use_case = LoginUserUseCase(uow)
-        try:
-            response = await use_case.execute(email=data.email, password=data.password)
-        except ApplicationError as error:
-            raise HTTPException(
-                status_code=status_codes.HTTP_401_UNAUTHORIZED,
-                detail=str(error),
-            )
+        response = await use_case.execute(email=data.email, password=data.password)
         return response
 
     @get("/refresh", summary="Обновление access и refresh токенов")
@@ -47,13 +42,7 @@ class AuthController(Controller):
         self, request: Request, uow: FromDishka[IUserServiceUoW]
     ) -> Response[TokenResponseSchema]:
         user_case = UpdateAccessAndRefreshTokensUseCase(uow)
-        try:
-            result = await user_case.execute(request.auth.sub, refresh_token=request.user)
-        except ApplicationError as error:
-            raise HTTPException(
-                status_code=status_codes.HTTP_401_UNAUTHORIZED,
-                detail=str(error),
-            )
+        result = await user_case.execute(request.auth.sub, refresh_token=request.user)
         return result
 
     @get("/logout", summary="Выход (удаление refresh token)")

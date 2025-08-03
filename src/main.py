@@ -58,14 +58,7 @@ container = make_async_container(
     MessagingProvider(),
 )
 
-metric_router = Router(
-    path="",
-    route_handlers=[
-        CustomPrometheusController,
-    ],
-)
-
-router = DishkaRouter(
+api_router = DishkaRouter(
     path="/api",
     route_handlers=[
         AuthController,
@@ -75,8 +68,15 @@ router = DishkaRouter(
         ProjectsController,
         SubProjectsController,
         StagesController,
-        DownloadController,
     ],
+)
+
+simple_router = DishkaRouter(
+    path="",
+    route_handlers=[
+        DownloadController,
+        CustomPrometheusController,
+    ]
 )
 
 default_role_name = "Администратор"
@@ -128,7 +128,7 @@ async def create_test_data():
 
 app = Litestar(
     debug=True,
-    route_handlers=[router, metric_router],
+    route_handlers=[api_router, simple_router, ],
     logging_config=litestar_config,
     middleware=[DefineMiddleware(AuthMiddleware), prometheus_config.middleware],
     on_startup=[
@@ -148,7 +148,7 @@ app = Litestar(
         ApplicationError: log_exception,
         InfrastructureError: log_exception,
     },
-    request_max_body_size=10 * 1024 * 1024,
+    request_max_body_size=1000 * 1024 * 1024,
     openapi_config=OpenAPIConfig(
         title="IT-M Task Tracker",
         version="0.0.1",
