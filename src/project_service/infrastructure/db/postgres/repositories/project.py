@@ -110,8 +110,13 @@ class ProjectRepository:
                 joinedload(ProjectModel.template).selectinload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.files),
                 selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.files),
+                selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.files),
             )
         )
         result_project = await self.session.execute(stmt_project)
@@ -141,6 +146,11 @@ class ProjectRepository:
             .options(
                 joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.files),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.files),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.files),
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
@@ -181,8 +191,7 @@ class ProjectReadRepository:
             .options(
                 noload(SubprojectModel.stages),
                 noload(SubprojectModel.project),
-                #     selectinload(SubprojectModel.stages)
-                #     .selectinload(StageModel.messages)
+                noload(SubprojectModel.files),
             )
         )
         if project_id := filters.get("project_id", False):
@@ -196,7 +205,11 @@ class ProjectReadRepository:
         stmt = (
             select(SubprojectModel)
             .where(SubprojectModel.id == subproject_id)
-            .options(noload(SubprojectModel.stages), noload(SubprojectModel.project))
+            .options(
+                selectinload(SubprojectModel.files),
+                noload(SubprojectModel.stages),
+                noload(SubprojectModel.project),
+            )
         )
         result = await self.session.execute(stmt)
         try:
@@ -220,7 +233,10 @@ class ProjectReadRepository:
             .order_by(desc(StageModel.updated_at))
             .limit(limit)
             .offset(offset)
-            .options(selectinload(StageModel.messages))
+            .options(
+                noload(StageModel.files),
+                selectinload(StageModel.messages),
+            )
         )
         if subproject_id := filters.get("subproject_id", False):
             stmt = stmt.where(StageModel.subproject_id == subproject_id)
@@ -230,7 +246,14 @@ class ProjectReadRepository:
 
     @count_queries
     async def get_stage(self, stage_id: UUID) -> Stage:
-        stmt = select(StageModel).where(StageModel.id == stage_id).options(selectinload(StageModel.messages))
+        stmt = (
+            select(StageModel)
+            .where(StageModel.id == stage_id)
+            .options(
+                selectinload(StageModel.files),
+                selectinload(StageModel.messages),
+            )
+        )
         result = await self.session.execute(stmt)
         try:
             orm_stage = result.scalar_one()
@@ -263,7 +286,8 @@ class ProjectReadRepository:
             .where(ProjectModel.id == project_id)
             .order_by(desc(ProjectModel.created_at))
             .options(
-                joinedload(ProjectModel.template).joinedload(SubprojectTemplateModel.stages),
+                joinedload(ProjectModel.template)
+                .joinedload(SubprojectTemplateModel.stages),
                 selectinload(ProjectModel.files),
                 noload(ProjectModel.subprojects),
             )

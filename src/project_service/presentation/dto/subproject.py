@@ -19,7 +19,7 @@ class SubprojectShortResponseDTO(DataclassDTO[Subproject]):
 
 
 class SubprojectResponseDTO(DataclassDTO[Subproject]):
-    config = DTOConfig(max_nested_depth=1)
+    config = DTOConfig(max_nested_depth=1, exclude={"stages", })
 
 
 class SubprojectUpdateRequestDTO(DataclassDTO[SubprojectUpdateRequestSchema]):
