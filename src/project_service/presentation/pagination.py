@@ -5,6 +5,8 @@ from src.common.message_bus.interfaces import IMessageBus
 from src.common.message_bus.schemas import GetUserInfoListQuery, GetUserInfoListResponse, GetUserInfoResponse
 from src.common.litestar_.pagination import FilteredAbstractAsyncOffsetPaginator
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.domain.entities.file_attachment import FileAttachment
+from src.project_service.infrastructure.read_models.file_attachment import FileAttachmentRead
 from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 
@@ -69,6 +71,7 @@ class StageOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
                     )
                     for msg in stage.messages
                 ],
+                files=[FileAttachmentRead.model_validate(file) for file in stage.files],
             )
             for stage in stages
         ]
