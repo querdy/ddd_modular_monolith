@@ -34,6 +34,7 @@ class Stage:
             status=StageStatus.CREATED,
             description=StageDescription.create(description) if description else None,
             messages=[],
+            files=[]
         )
 
     def update(self, name: str, description: str | None = None) -> None:
