@@ -1,12 +1,15 @@
 from typing import TypeVar
 from uuid import UUID
 
+from litestar.pagination import OffsetPagination
+
 from src.common.message_bus.interfaces import IMessageBus
 from src.common.message_bus.schemas import GetUserInfoListQuery, GetUserInfoListResponse, GetUserInfoResponse
 from src.common.litestar_.pagination import FilteredAbstractAsyncOffsetPaginator
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
+from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 
 T = TypeVar("T")
 
@@ -31,6 +34,15 @@ class SubprojectOffsetPagination(FilteredAbstractAsyncOffsetPaginator):
 
     async def get_items(self, limit: int, offset: int, **filters) -> list[T]:
         return await self.uow.projects_read.get_subprojects(limit, offset, **filters)
+
+    @staticmethod
+    def create(subprojects: list[SubprojectRead], total: int, limit: int, offset: int) -> OffsetPagination[SubprojectRead]:
+        return OffsetPagination(
+            items=subprojects,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
 
 
 class StageOffsetPagination(FilteredAbstractAsyncOffsetPaginator):

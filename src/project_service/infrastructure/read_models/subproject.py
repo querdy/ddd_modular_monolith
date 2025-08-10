@@ -12,5 +12,6 @@ class SubprojectRead(BaseModel):
     updated_at: datetime
     progress: float
     status: str
+    project_id: UUID
 
     model_config = ConfigDict(from_attributes=True)

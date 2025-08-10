@@ -20,6 +20,7 @@ from src.project_service.infrastructure.db.postgres.models import (
 from src.project_service.infrastructure.mappers.project import project_to_orm, project_to_domain
 from src.project_service.infrastructure.mappers.stage import stage_to_domain
 from src.project_service.infrastructure.mappers.subproject import subproject_to_domain
+from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 
 
 class ProjectRepository:
@@ -172,7 +173,7 @@ class ProjectReadRepository:
         return result.scalar()
 
     @count_queries
-    async def get_subprojects(self, limit: int, offset: int, **filters) -> list[Subproject]:
+    async def get_subprojects(self, limit: int, offset: int, **filters) -> list[SubprojectRead]:
         stmt = (
             select(SubprojectModel)
             .limit(limit)
@@ -189,10 +190,10 @@ class ProjectReadRepository:
             stmt = stmt.where(SubprojectModel.project_id == project_id)
         result = await self.session.execute(stmt)
         orm_subprojects = result.scalars().all()
-        return [subproject_to_domain(orm_subproject) for orm_subproject in orm_subprojects]
+        return [SubprojectRead.model_validate(orm_subproject) for orm_subproject in orm_subprojects]
 
     @count_queries
-    async def get_subproject(self, subproject_id: UUID) -> Subproject:
+    async def get_subproject(self, subproject_id: UUID) -> SubprojectRead:
         stmt = (
             select(SubprojectModel)
             .where(SubprojectModel.id == subproject_id)
@@ -203,7 +204,7 @@ class ProjectReadRepository:
             orm_subproject = result.scalar_one()
         except NoResultFound:
             raise InfrastructureError(f"Подпроект с ID {subproject_id} не найден")
-        return subproject_to_domain(orm_subproject)
+        return SubprojectRead.model_validate(orm_subproject)
 
     @count_queries
     async def stages_count(self, **filters) -> int:
