@@ -142,11 +142,6 @@ class ProjectsController(Controller):
         result = await use_case.execute(project_id, data_instance.name, data_instance.description)
         return result
 
-    # @get(
-    #     path="",
-    #     summary="Получение файла"
-    # )
-
     @post(
         path="/{project_id: uuid}/upload",
         summary="Загрузка файлов для проекта",

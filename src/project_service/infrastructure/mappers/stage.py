@@ -5,6 +5,7 @@ from src.project_service.domain.value_objects.stage_description import StageDesc
 from src.project_service.domain.value_objects.stage_name import StageName
 from src.project_service.infrastructure.db.postgres.models import StageModel
 from src.project_service.infrastructure.mappers.message import message_to_orm, message_to_domain
+from src.project_service.infrastructure.mappers.stage_files import stage_file_to_orm, stage_file_to_domain
 
 
 @singledispatch
@@ -21,7 +22,9 @@ def _(obj: Stage) -> StageModel:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=obj.status,
+        files=[stage_file_to_orm(file) for file in obj.files],
         messages=[message_to_orm(message) for message in obj.messages],
+
     )
 
 
@@ -39,5 +42,6 @@ def _(obj: StageModel) -> Stage:
         created_at=obj.created_at,
         updated_at=obj.updated_at,
         status=StageStatus(obj.status),
+        files=[stage_file_to_domain(file) for file in obj.files],
         messages=[message_to_domain(message) for message in obj.messages],
     )

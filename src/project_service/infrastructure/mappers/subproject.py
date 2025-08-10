@@ -5,6 +5,8 @@ from src.project_service.domain.value_objects.subproject_description import Subp
 from src.project_service.domain.value_objects.subproject_name import SubprojectName
 from src.project_service.infrastructure.db.postgres.models import SubprojectModel
 from src.project_service.infrastructure.mappers.stage import stage_to_orm, stage_to_domain
+from src.project_service.infrastructure.mappers.subproject_files import subproject_file_to_orm, \
+    subproject_file_to_domain
 
 
 @singledispatch
@@ -23,6 +25,7 @@ def _(obj: Subproject) -> SubprojectModel:
         status=obj.status,
         progress=obj.progress,
         stages=[stage_to_orm(stage) for stage in obj.stages],
+        files=[subproject_file_to_orm(file) for file in obj.files],
     )
 
 
@@ -42,4 +45,5 @@ def _(obj: SubprojectModel) -> Subproject:
         status=SubprojectStatus(obj.status),
         progress=obj.progress,
         stages=[stage_to_domain(stage) for stage in obj.stages],
+        files=[subproject_file_to_domain(file) for file in obj.files],
     )

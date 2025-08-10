@@ -7,6 +7,7 @@ from src.common.message_bus.schemas import GetUserInfoResponse, GetUserInfoListR
 from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.entities.stage_status_history import StageStatusHistory
+from src.project_service.infrastructure.read_models.file_attachment import FileAttachmentRead
 from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 from src.project_service.presentation.pagination import StageOffsetPagination, StageStatusHistoryOffsetPagination
@@ -43,6 +44,14 @@ class GetStageUseCase:
                     )
                     for msg in stage.messages
                 ],
+                files=[FileAttachmentRead(
+                    id=file.id,
+                    filename=file.filename,
+                    content_type=file.content_type,
+                    size=file.size,
+                    uploaded_at=file.uploaded_at,
+                    path=file.path,
+                ) for file in stage.files],
             )
 
 

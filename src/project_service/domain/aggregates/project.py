@@ -24,7 +24,7 @@ class Project:
     status: ProjectStatus
     progress: float
     subprojects: list[Subproject]
-    files: list[FileAttachment] = field(default_factory=list)
+    files: list[FileAttachment]
 
     template: SubprojectTemplate | None = field(default=None)
 
@@ -54,10 +54,17 @@ class Project:
         )
         self.files.append(file)
 
+    def add_file_to_subproject(self, subproject_id: UUID, filename: str, content_type: str, size: int, path: str) -> None:
+        subproject = self.get_subproject_by_id(subproject_id)
+        subproject.add_file(filename, content_type, size, path)
+
+    def add_file_to_stage(self, stage_id: UUID, filename: str, content_type: str, size: int, path: str) -> None:
+        subproject_with_stage = self.get_subproject_by_stage_id(stage_id)
+        subproject_with_stage.add_file_to_stage(stage_id, filename, content_type, size, path)
+
+
     def make_template_from_subproject(self, subproject_id: UUID):
         subproject = self.get_subproject_by_id(subproject_id)
-        if subproject is None:
-            raise DomainError(f"Подпроект с id `{subproject_id}` не найден")
         if self.template is not None:
             self.template.stages = [
                 StageTemplate.create(
@@ -114,14 +121,16 @@ class Project:
         self.updated_at = datetime.now(UTC).replace(tzinfo=None)
 
     def get_subproject_by_id(self, subproject_id: UUID) -> Subproject:
-        return next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
+        subproject =  next(filter(lambda sp: sp.id == subproject_id, self.subprojects), None)
+        if subproject is None:
+            raise DomainError(f"Подпроект с id `{subproject_id}` не найден")
+        return subproject
 
     def get_stage_by_id(self, stage_id: UUID) -> Stage | None:
         for subproject in self.subprojects:
             stage = next((stage for stage in subproject.stages if stage.id == stage_id), None)
             if stage is not None:
                 return stage
-        return None
 
     def get_subproject_by_stage_id(self, stage_id: UUID) -> Subproject | None:
         return next(filter(lambda sp: any(stage.id == stage_id for stage in sp.stages), self.subprojects), None)

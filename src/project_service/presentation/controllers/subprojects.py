@@ -17,14 +17,12 @@ from src.project_service.application.use_cases.write.subproject import (
     UpdateSubprojectUseCase,
 )
 from src.project_service.domain.entities.subproject import Subproject
-from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
     SubprojectCreateResponseDTO,
     SubprojectShortResponseDTO,
     SubprojectUpdateRequestDTO,
-    SubprojectReadDTO,
 )
 from src.project_service.presentation.schemas.subproject import (
     SubprojectCreateRequestSchema,
@@ -59,7 +57,7 @@ class SubProjectsController(Controller):
 
     @get(
         path="",
-        return_dto=SubprojectReadDTO,
+        return_dto=SubprojectShortResponseDTO,
         dependencies={"filters": get_subproject_filters, "pagination": get_limit_offset_filters},
         guards=[PermissionGuard("subprojects:read")],
         summary="Получение подпроектов",
@@ -69,18 +67,18 @@ class SubProjectsController(Controller):
         pagination: LimitOffsetFilterRequest,
         filters: FilterSubprojectsRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
-    ) -> OffsetPagination[SubprojectRead]:
+    ) -> OffsetPagination[Subproject]:
         use_case = GetSubprojectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
 
     @get(
         path="/{subproject_id: uuid}",
-        return_dto=SubprojectReadDTO,
+        return_dto=SubprojectShortResponseDTO,
         guards=[PermissionGuard("subprojects:read")],
         summary="Получение подпроекта по ID",
     )
-    async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> SubprojectRead:
+    async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Subproject:
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result

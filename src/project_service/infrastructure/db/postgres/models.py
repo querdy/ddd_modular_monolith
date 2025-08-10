@@ -60,6 +60,12 @@ class SubprojectModel(IdBase):
     progress: Mapped[float] = mapped_column(Float, nullable=False)
     project_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
 
+    files: Mapped[list["SubprojectFileAttachmentModel"]] = relationship(
+        "SubprojectFileAttachmentModel",
+        back_populates="subproject",
+        cascade="all, delete-orphan",
+    )
+
     project: Mapped["ProjectModel"] = relationship(
         "ProjectModel",
         back_populates="subprojects",
@@ -70,6 +76,17 @@ class SubprojectModel(IdBase):
         cascade="all, delete-orphan",
     )
 
+class SubprojectFileAttachmentModel(IdBase):
+    __tablename__ = "subproject_files"
+
+    subproject_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("subprojects.id", ondelete="CASCADE"))
+    subproject: Mapped[SubprojectModel] = relationship(back_populates="files")
+
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    content_type: Mapped[str] = mapped_column(String, nullable=False)
+    size: Mapped[int] = mapped_column(Integer, nullable=False)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    path: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
 class StageModel(IdBase):
     __tablename__ = "stages"
@@ -86,6 +103,12 @@ class StageModel(IdBase):
         nullable=False,
     )
 
+    files: Mapped[list["StageFileAttachmentModel"]] = relationship(
+        "StageFileAttachmentModel",
+        back_populates="stage",
+        cascade="all, delete-orphan",
+    )
+
     subproject: Mapped["SubprojectModel"] = relationship(
         "SubprojectModel",
         back_populates="stages",
@@ -97,6 +120,17 @@ class StageModel(IdBase):
         order_by="asc(MessageModel.created_at)",
     )
 
+class StageFileAttachmentModel(IdBase):
+    __tablename__ = "stage_files"
+
+    stage_id: Mapped[UUID] = mapped_column(DBUUID, ForeignKey("stages.id", ondelete="CASCADE"))
+    stage: Mapped[StageModel] = relationship(back_populates="files")
+
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    content_type: Mapped[str] = mapped_column(String, nullable=False)
+    size: Mapped[int] = mapped_column(Integer, nullable=False)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    path: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
 class MessageModel(IdBase):
     __tablename__ = "messages"

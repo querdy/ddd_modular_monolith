@@ -1,16 +1,22 @@
 from dataclasses import asdict
 from datetime import datetime
+from typing import Annotated, List
 from uuid import UUID
 
 from dishka import FromDishka
 from litestar import Controller, post, get, patch, delete, Request, put
+from litestar.datastructures import UploadFile
 from litestar.dto import DTOData
+from litestar.enums import RequestEncodingType
 from litestar.pagination import OffsetPagination
+from litestar.params import Parameter, Body
+from types_aiobotocore_s3 import S3Client
 
 from src.common.litestar_.di.filters import get_limit_offset_filters, LimitOffsetFilterRequest
 from src.common.litestar_.guards.permission import PermissionGuard
 from src.common.message_bus.interfaces import IMessageBus
 from src.project_service.application.protocols import IProjectServiceUoW
+from src.project_service.application.services.store import generate_unique_object_key
 from src.project_service.application.use_cases.read.stage import (
     GetStageUseCase,
     GetStagesUseCase,
@@ -198,3 +204,40 @@ class StagesController(Controller):
         use_case = AddMessageToStageUseCase(uow, mb)
         result = await use_case.execute(stage_id, UUID(request.auth.sub), data_instance.message)
         return result
+
+    @post(
+        path="/{stage_id: uuid}/upload",
+        summary="Загрузка файлов для этапа",
+    )
+    async def upload_stage_files(
+        self,
+        stage_id: Annotated[UUID, Parameter()],
+        data: Annotated[List[UploadFile], Body(media_type=RequestEncodingType.MULTI_PART)],
+        s3_client: FromDishka[S3Client],
+        uow: FromDishka[IProjectServiceUoW],
+    ) -> None:
+        async with uow:
+            project = await uow.projects.get_by_stage(stage_id)
+            for file in data:
+                content = await file.read()
+                object_key = await generate_unique_object_key(
+                    s3_client=s3_client,
+                    bucket="files",
+                    base_path=f"stages/{stage_id}",
+                    filename=file.filename,
+                )
+                await s3_client.put_object(
+                    Bucket="files",
+                    Key=object_key,
+                    Body=content,
+                    ContentType=file.content_type,
+                    ContentLength=len(content),
+                )
+                project.add_file_to_stage(
+                    stage_id,
+                    filename=object_key.split("/")[-1],
+                    content_type=file.content_type,
+                    size=len(content),
+                    path=object_key,
+                )
+            await uow.projects.update(project)
