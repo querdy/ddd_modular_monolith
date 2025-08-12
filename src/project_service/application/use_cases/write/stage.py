@@ -1,18 +1,8 @@
-import asyncio
-from asyncio import TaskGroup
-from datetime import datetime, UTC
-from typing import Sequence
 from uuid import UUID
 
-from dishka import FromDishka
-from loguru import logger
-from pydantic import BaseModel
-
-from src.common.exceptions.application import ApplicationError, ApplicationPermissionDeniedError
+from src.common.exceptions.application import ApplicationPermissionDeniedError
 from src.common.message_bus.interfaces import IMessageBus
 from src.common.message_bus.schemas import (
-    Query,
-    GetUserInfoQuery,
     GetUserInfoResponse,
     GetUserInfoListQuery,
     GetUserInfoListResponse,
@@ -22,6 +12,7 @@ from src.project_service.application.protocols import IProjectServiceUoW
 from src.project_service.domain.entities.message import Message
 from src.project_service.domain.entities.stage import Stage
 from src.project_service.domain.value_objects.enums import StageStatus
+from src.project_service.infrastructure.read_models.file_attachment import FileAttachmentRead
 from src.project_service.infrastructure.read_models.message import MessageRead
 from src.project_service.infrastructure.read_models.stage import StageRead
 
@@ -123,6 +114,14 @@ class ChangeStageStatusUseCase:
                 )
                 for msg in new_stage.messages
             ],
+            files=[FileAttachmentRead(
+                id=file.id,
+                filename=file.filename,
+                content_type=file.content_type,
+                size=file.size,
+                uploaded_at=file.uploaded_at,
+                path=file.path,
+            ) for file in new_stage.files],
         )
 
 
@@ -162,4 +161,12 @@ class AddMessageToStageUseCase:
                     )
                     for msg in new_stage.messages
                 ],
+                files=[FileAttachmentRead(
+                    id=file.id,
+                    filename=file.filename,
+                    content_type=file.content_type,
+                    size=file.size,
+                    uploaded_at=file.uploaded_at,
+                    path=file.path,
+                ) for file in new_stage.files],
             )
