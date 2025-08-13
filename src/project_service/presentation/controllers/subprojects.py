@@ -17,6 +17,7 @@ from src.project_service.application.use_cases.write.subproject import (
     UpdateSubprojectUseCase,
 )
 from src.project_service.domain.entities.subproject import Subproject
+from src.project_service.infrastructure.read_models.subproject import SubprojectRead
 from src.project_service.presentation.di.filters import get_subproject_filters
 from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
@@ -67,7 +68,7 @@ class SubProjectsController(Controller):
         pagination: LimitOffsetFilterRequest,
         filters: FilterSubprojectsRequestSchema,
         uow: FromDishka[IProjectServiceUoW],
-    ) -> OffsetPagination[Subproject]:
+    ) -> OffsetPagination[SubprojectRead]:
         use_case = GetSubprojectsUseCase(uow)
         result = await use_case.execute(limit=pagination.limit, offset=pagination.offset, **asdict(filters))
         return result
