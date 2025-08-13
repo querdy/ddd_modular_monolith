@@ -23,7 +23,7 @@ from src.project_service.presentation.dto.subproject import (
     SubprojectCreateRequestDTO,
     SubprojectCreateResponseDTO,
     SubprojectShortResponseDTO,
-    SubprojectUpdateRequestDTO,
+    SubprojectUpdateRequestDTO, SubprojectReadDTO,
 )
 from src.project_service.presentation.schemas.subproject import (
     SubprojectCreateRequestSchema,
@@ -58,7 +58,7 @@ class SubProjectsController(Controller):
 
     @get(
         path="",
-        return_dto=SubprojectShortResponseDTO,
+        return_dto=SubprojectReadDTO,
         dependencies={"filters": get_subproject_filters, "pagination": get_limit_offset_filters},
         guards=[PermissionGuard("subprojects:read")],
         summary="Получение подпроектов",
@@ -75,11 +75,11 @@ class SubProjectsController(Controller):
 
     @get(
         path="/{subproject_id: uuid}",
-        return_dto=SubprojectShortResponseDTO,
+        return_dto=SubprojectReadDTO,
         guards=[PermissionGuard("subprojects:read")],
         summary="Получение подпроекта по ID",
     )
-    async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> Subproject:
+    async def get(self, subproject_id: UUID, uow: FromDishka[IProjectServiceUoW]) -> SubprojectRead:
         use_case = GetSubprojectUseCase(uow)
         result = await use_case.execute(subproject_id)
         return result
