@@ -49,6 +49,11 @@ class ProjectRepository:
                 selectinload(ProjectModel.subprojects)
                 .selectinload(SubprojectModel.stages)
                 .selectinload(StageModel.messages),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.stages)
+                .selectinload(StageModel.files),
+                selectinload(ProjectModel.subprojects)
+                .selectinload(SubprojectModel.files)
             )
         )
         result = await self.session.execute(stmt)
